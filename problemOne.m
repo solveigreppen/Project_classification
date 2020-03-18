@@ -60,3 +60,4 @@ disp("hello world")
 
 >>>>>>> Stashed changes
 'Heisann'
+'Hallo';
