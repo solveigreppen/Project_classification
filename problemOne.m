@@ -55,5 +55,7 @@ hei hallo hadet
 print("Hello world");
 =======
 disp("hello world")
+%hei
+disp("hello world")
 
 >>>>>>> Stashed changes
