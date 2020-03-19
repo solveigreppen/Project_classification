@@ -1,13 +1,20 @@
-[files, dur, F0s, F1s, F2s, F3s, F4s, F120, F220, F320, F150, F250, F350, F180, F280, F380] = textscan('vowdata_nohead.dat', '%s%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f');
+[files, dur, F0s, F1s, F2s, F3s, F4s, F120, F220, F320, F150, F250, F350, F180, F280, F380] = textread('vowdata_nohead.dat', '%s%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f');
 
-vowels= char('ae', 'ah', 'aw', 'eh', 'er', 'ei', 'ih', 'iy', 'oa', 'oo', 'uh', 'uw'); 
+vowels= ['ae'; 'ah'; 'aw'; 'eh'; 'er'; 'ei'; 'ih'; 'iy'; 'oa'; 'oo'; 'uh'; 'uw'];
 talker_group = char('m', 'w', 'b', 'g'); 
-filenames = char(filenames); %converts cell array to character matrix.
+filenames = char(files); %converts cell array to character matrix.
 [nfiles, nchar] = size(filenames); %finner ut hvor bred og lang matrisen er(?) n files er nedover
 
-for ifile=1:nfiles
-    vowel_code(ifile) = strcmp(filenames(ifile, 4:5), vowels);  %filenames(ifile, 4:5) gives us the row, and our vowel, that is in place 4 and 5
-    
+% for ifile=1:nfiles
+a = strcmp(filenames(5, 4:5), vowels);  %filenames(ifile, 4:5) gives us the row, and our vowel, that is in place 4 and 5
+disp(a);
+
+disp(filenames(5,4:
+s1= 'kajak'; 
+s2= 'kaja'; 
+tf=strncmp(s1,s2,4);
+disp(tf); 
+
     
     
 
