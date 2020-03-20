@@ -6,20 +6,26 @@ filenames = char(files); %converts cell array to character matrix.
 [nfiles, nchar] = size(filenames); %finner ut hvor bred og lang matrisen er(?) n files er nedover
 len_vowels = length(vowels); 
 % for ifile=1:nfiles
-for vowel=1:len_vowels
-    a = strcmp(filenames(5, 4:5), vowels(vowel, 1:2)); %filenames(ifile, 4:5) gives us the row, and our vowel, that is in place 4 and 5
-    if a=1 
-        
-disp(a);
-disp(vowels(1, 1:2));
-disp(filenames(5, 4:5));
-s1= 'kajak'; 
-s2= 'kaja'; 
-tf=strncmp(s1,s2,4);
-disp(tf); 
+vowel_code=cells(1,100000); 
+for ifile=1:nfiles
+    for vowel=1:len_vowels
+    a = strcmp(filenames(ifile, 4:5), vowels(vowel, 1:2)); %filenames(ifile, 4:5) gives us the row, and our vowel, that is in place 4 and 5
+        if a==1
+            vowel_code(ifile)= filenames(ifile, 4:5); %vet ikke hva som skjer.. 
+        end
+    end
+end
 
-    
-    
+%         
+% disp(a);
+% disp(vowels(1, 1:2));
+% disp(filenames(5, 4:5));
+% s1= 'kajak'; 
+% s2= 'kaja'; 
+% tf=strncmp(s1,s2,4);
+% disp(tf); 
+
+
 
 
 
