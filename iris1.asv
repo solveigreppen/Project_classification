@@ -1,0 +1,30 @@
+%Class 1 = Iris Setosa
+%Class 2 = Iris Versicolour
+%Class 3 = Iris Virginica
+
+Ntrain = 30;
+Ntest = 20;
+C = 3; % # classes
+D = 4; % # columns in textfile
+M = 1000; % # iterations (velger vi denne størrelsen selv?)
+alpha = 0.05;
+W = zeros(C,D);
+
+%sigmoid = (1+exp(-zk))^-1; %sigmoid(x) er en egen matlab-funksjon
+nabla_gk_MSE = gk-Ntrain;
+nabla_zk_gk = gk.*(1-gk);
+nabla_W_zk = xk.';
+
+for m = 1:M
+    for k = 1:Ntrain
+        xk = a;
+        zk = W*xk + wo;
+        wo = a;
+        gk = (1+exp(-zk))^-1; %bruke innebygd sigmoid eller lage egen funksjon?
+    end
+
+    nablaW_MSE = nablaW_MSE + nabla_gk_MSE.* nabla_zk_gk .* nabla_W_zk;
+    W(m) = W(m-1)- aplha.*nablaW_MSE;
+end
+
+
