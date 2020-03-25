@@ -52,7 +52,7 @@ for m = 1:M
     for k = 1:Ntrain
         xk = x_train(k,:).'; %ønskelig å transponere denne? Ja, virker sånn pga matrix dimension
         zk = W0.*xk+w0; %forenkle til zk = Wx?
-        gk = (1+exp(-zk)).^-1; %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+        gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
         %kopiert kode, bør endres
         tk = zeros(C,1);
         c = floor((k-1)/Ntrain * C) + 1;
