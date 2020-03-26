@@ -10,6 +10,7 @@ x3all = load('class_3','-ascii');
 %x2= [x2all(:,3) x2all(:,4)];
 %x3= [x3all(:,3) x3all(:,4)];
 
+% petal widths in cm
 x1= [x1all(:,4)];
 x2= [x2all(:,4)];
 x3= [x3all(:,4)];
