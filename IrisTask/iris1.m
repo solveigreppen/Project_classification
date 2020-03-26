@@ -3,17 +3,20 @@
 %Class 3 = Iris Virginica
 
 clear;
-Ntrain = 30;
-Ntest = 20;
 C = 3; % # classes
 D = 4; % # columns in textfile
+Ntrain = 30;
+Ntest = 20;
+Ntrain_size= Ntrain *C; 
 M = 1000; % # iterations (velger vi denne størrelsen selv?)
 alpha = 0.05; %teste seg fram med denne
 W0 = zeros(C,D);
 w0 = zeros(C,1); %hva skal vi fylle i denne?
 W = [W0 w0]; %forenkler W til senere uttrykk
 nablaW_MSEs = zeros(1,M);
-MSEs = zeros(1,M);
+MSEs = zeros(1,M); %lager en array/matrise med kun en rad, fylt med nuller,
+% da setter vi av lagringsplassen for denne arrayen slik at koden vår også
+% kjører fortere
 %{
 t1 = [1 0 0].';
 t2 = [0 1 0].';
@@ -44,44 +47,69 @@ x2_test = x2(Ntrain+1:end);
 x3_test = x3(Ntrain+1:end);
 x_test = [x1_test, x2_test, x3_test];
 
-%training the classifier
-for m = 1:M
-    MSE = 0;
-    %nablaW_MSE = 0;
-    
-    for k = 1:Ntrain
-        xk = x_train(k,:).'; %ønskelig å transponere denne? Ja, virker sånn pga matrix dimension
-        zk = W0.*xk+w0; %forenkle til zk = Wx?
-        gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
-        %kopiert kode, bør endres
-        tk = zeros(C,1);
-        c = floor((k-1)/Ntrain * C) + 1;
-        tk(c) = 1;
-        %annen måte å finne tk på, mer tungvint (men laget selv)
-        %{
-        if k<11
-            tk = t1;
-        end
-        if k<21 && k>10
-            tk=t2;
-        end
-        if k>21
-            tk = t3;
-        end
-        %}    
-        %nablaW_MSE = nablaW_MSE + gk-Ntrain.*(gk.*(1-gk)).*xk.';
-        MSE = MSE + 0.5*((gk-tk).')*(gk-tk);
-        %fprintf('%3d',tk);
+disp(W);
 
+for m = 1:M  
+    nabla_MSE = 0;
+    MSE = 0;
+    for k = 1:Ntrain_size
+        c = floor((k-1)/Ntrain_size * C) + 1;
+        tk = zeros(C, 1);
+        tk(c) = 1;
+        
+        xk = [x_train(k,:)'; 1];
+        zk = W.*xk + w_0;
+        gk = sigmoid(zk);
+        nabla_MSE = nabla_MSE + ((gk - tk).*(gk).*(1-gk))*xk';
+        MSE = MSE + 0.5 * (gk - tk)'*(gk - tk);
     end
-    %W = W - alpha.*nablaW_MSE;
-    MSEs(1,m) = MSE;
-    %fprintf('%d',m);
-    %nablaW_MSEs(m) = norm(nablaW_MSE);
+    W = W - alpha*nabla_MSE;
+    MSEs(m) = MSE;
+    nabla_MSEs(m) = norm(nabla_MSE);
 end
-%{
-nabla_gk_MSE = gk-Ntrain;
-    nabla_zk_gk = gk.*(1-gk);
-    nabla_W_zk = xk.';
-nablaW_MSE = nablaW_MSE + nabla_gk_MSE.* nabla_zk_gk .* nabla_W_zk;
-%}
+%training the classifier //MSE based training of a linear classifier, kap
+%3.2 kompendium
+% for m = 1:M
+%     MSE = 0;
+%     %nablaW_MSE = 0;
+%     
+%     for k = 1:Ntrain
+%         xk = x_train(k,:)'; %ønskelig å transponere denne? Ja, virker sånn pga matrix dimension. transponerer denne bare x_train?  
+%         %disp(xk); 
+%         zk = W0.*xk+w0; %forenkle til zk = Wx?
+%         gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+%         %kopiert kode, bør endres
+%         tk = zeros(C,1);
+%         c = floor((k-1)/Ntrain * C) + 1;
+%         tk(c) = 1;
+%         %annen måte å finne tk på, mer tungvint (men laget selv)
+%         %{
+%         if k<11
+%             tk = t1;
+%         end
+%         if k<21 && k>10
+%             tk=t2;
+%         end
+%         if k>21
+%             tk = t3;
+%         end
+%         %} 
+%         disp(xk); 
+%         nablaW_MSE = nablaW_MSE + ((gk - tk).*(gk).*(1-gk))*xk';
+%         MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
+%         %fprintf('%3d',tk);
+% 
+%     end
+%     %disp(MSE); 
+%     %W = W - alpha.*nablaW_MSE;
+%    % MSEs(m) = MSE; %1000 elemeter på left side, høyre side har 30 elementer
+%     %fprintf('%d',m);
+%     %nablaW_MSEs(m) = norm(nablaW_MSE);
+% end
+% %{
+% nabla_gk_MSE = gk-Ntrain;
+%     nabla_zk_gk = gk.*(1-gk);
+%     nabla_W_zk = xk.';
+% nablaW_MSE = nablaW_MSE + nabla_gk_MSE.* nabla_zk_gk .* nabla_W_zk;
+% %}
+%  
