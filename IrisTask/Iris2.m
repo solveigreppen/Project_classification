@@ -12,7 +12,10 @@ test_tot = N_test * C; %totale antallet vi skal benytte i testing, sum av c1, c2
 M=30; %Antall iterasjoner vi skal benytte i MSE
 alpha = 0.005; %step factor, vi må teste oss frem med denne, til vi er fornøyd
 
-w0= 
+%Basic eq. Y = W*X + B når features er arrangert som rader. er det
+%kolloner, må vi endre alt nedenfor
+%Weigth W må være nodes in layer(n) x nodes in layer (n-1) størrelse
+%Bias B må ha størrelse nodes in layer (n) x 1. 
 
 %%Load data
 

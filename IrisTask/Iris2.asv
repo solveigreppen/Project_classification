@@ -12,6 +12,7 @@ test_tot = N_test * C; %totale antallet vi skal benytte i testing, sum av c1, c2
 M=30; %Antall iterasjoner vi skal benytte i MSE
 alpha = 0.005; %step factor, vi må teste oss frem med denne, til vi er fornøyd
 
+%Weigth W må være nodes in layer (n-1) x nodes
 
 %%Load data
 
@@ -37,14 +38,19 @@ x_test = [x1_test, x2_test, x3_test]; %egen matrise for all test data
 
 for m= 1:M
     MSE =0; 
+    grad=0; %opretter ny for hver gang
     for k= 1:Ntrain
         c = floor((k-1)/Ntrain * C) + 1;
         t = zeros(C, 1);
         t(c) = 1;  %lager en matrise over hvilke klasse testen vår tilhører
-        disp(t);
+        %disp(t);
         
-        xk= x_train(k, %Verdiene i treningsmatrisen vår, tar ut en rad av gangen, itererer med k, altså 30 ganger
-        
+        xk=[x_train(k, :)'; 1];  %Verdiene i treningsmatrisen vår, tar ut en rad av gangen, itererer med k, altså 30 ganger
+        disp(xk);
+        z= W*xk +w0; 
+        g=sigmoid(z); 
+        grad= grad +((g-t)*g*(1-g))*xk; 
+        MSE= MSE + 0.5*(g-t)^2; 
     end
 end
 

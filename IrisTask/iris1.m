@@ -52,7 +52,7 @@ for m = 1:M
     
     for k = 1:Ntrain
         xk = x_train(k,:).'; %?nskelig ? transponere denne? Ja, virker s?nn pga matrix dimension
-        zk = W0.*xk+w0; %forenkle til zk = Wx?
+        zk = W0.xk+w0; %forenkle til zk = Wx?
         gk = (1+exp(-zk)).^-1; %bruke innebygd sigmoid eller lage egen funksjon for ? forenkle koden?
         %kopiert kode, b?r endres
         tk = zeros(C,1);
