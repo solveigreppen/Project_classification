@@ -50,6 +50,7 @@ for m = 1:M
         MSE_grad = MSE_grad + ((g_k - t_k).*(g_k).*(1-g_k))*x_k';
         MSE = MSE + 0.5 * (g_k - t_k)'*(g_k - t_k);
     end
+    disp(MSE); 
     W = W - alpha*MSE_grad;
     MSEs(m) = MSE;
     MSE_grads(m) = norm(MSE_grad);

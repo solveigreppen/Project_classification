@@ -60,7 +60,7 @@ for m = 1:M
         
     end
     W = W - alpha.*nablaW_MSE;
-    MSEs(m,1:5) = MSE;
+    MSEs(m) = MSE;
     nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
 end
 %}
