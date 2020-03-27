@@ -52,7 +52,6 @@ for m = 1:M
     end
     W = W - alpha*MSE_grad;
     MSEs(m) = MSE;
-    disp(MSEs);
     MSE_grads(m) = norm(MSE_grad);
  
 end
