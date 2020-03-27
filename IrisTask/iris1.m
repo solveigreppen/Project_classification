@@ -1,3 +1,4 @@
+
 %Class 1 = Iris Setosa
 %Class 2 = Iris Versicolour
 %Class 3 = Iris Virginica
@@ -7,7 +8,7 @@ Ntrain = 30;
 Ntest = 20;
 C = 3; % # classes
 D = 4; % # columns in textfile
-M = 1000; % # iterations (velger vi denne størrelsen selv?)
+M = 1000; % # iterations (velger vi denne st?rrelsen selv?)
 alpha = 0.05; %teste seg fram med denne
 W0 = zeros(C,D); %skal vi fylle noe i denne?
 w0 = zeros(C,1); %hva skal vi fylle i denne?
@@ -50,14 +51,14 @@ for m = 1:M
     %nablaW_MSE = 0;
     
     for k = 1:Ntrain
-        xk = x_train(k,:).'; %ønskelig å transponere denne? Ja, virker sånn pga matrix dimension
-        zk = W0.*xk+w0; %forenkle til zk = Wx?
-        gk = (1+exp(-zk)).^-1; %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
-        %kopiert kode, bør endres
+        xk = x_train(k,:).'; %?nskelig ? transponere denne? Ja, virker s?nn pga matrix dimension
+        zk = W0.xk+w0; %forenkle til zk = Wx?
+        gk = (1+exp(-zk)).^-1; %bruke innebygd sigmoid eller lage egen funksjon for ? forenkle koden?
+        %kopiert kode, b?r endres
         tk = zeros(C,1);
         c = floor((k-1)/Ntrain * C) + 1;
         tk(c) = 1;
-        %annen måte å finne tk på, mer tungvint (men laget selv)
+        %annen m?te ? finne tk p?, mer tungvint (men laget selv)
         %{
         if k<11
             tk = t1;
@@ -85,3 +86,4 @@ nabla_gk_MSE = gk-Ntrain;
     nabla_W_zk = xk.';
 nablaW_MSE = nablaW_MSE + nabla_gk_MSE.* nabla_zk_gk .* nabla_W_zk;
 %}
+
