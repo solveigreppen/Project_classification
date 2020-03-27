@@ -56,17 +56,16 @@ for m = 1:M
         
         MSE1 = (gk-tk).*(gk).*(1-gk);     
         nablaW_MSE = nablaW_MSE + MSE1.*xk;
-        MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
+        %MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
         
     end
     W = W - alpha.*nablaW_MSE;
-    MSEs(m) = MSE;
+    %MSEs(m) = MSE;
     nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
 end
 %}
 
 %Plots 
-
 plot(nablaW_MSEs); 
 title('MSE gradient'); 
 ylabel('Magnitude');
