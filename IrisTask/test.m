@@ -14,6 +14,7 @@ W0 = zeros(C,D); %skal vi fylle noe i denne?
 w0 = zeros(C,1); %hva skal vi fylle i denne?
 W = [W0 w0]; %forenkler W til senere uttrykk
 nablaW_MSEs = zeros(1,M);
+MSEs = zeros(1,M);
 
 %load the datas
 x1all = load('class_1','-ascii');
@@ -40,7 +41,7 @@ x_test = [x1_test, x2_test, x3_test];
 %training the classifier
 for m = 1:M
     nablaW_MSE = 0;
-    
+    MSE = 0;
     for k = 1:Ntrain
         xk = x_train(k,:).'; %legge in x = [xk' 1]' ?
         zk = W.*xk; %forenkle til zk = Wx?
@@ -54,11 +55,11 @@ for m = 1:M
         
         MSE1 = (gk-tk).*(gk).*(1-gk);     
         nablaW_MSE = nablaW_MSE + MSE1.*xk;
-        %MSE = MSE + 0.5*((gk-tk).')*(gk-tk);
+        MSE = MSE + 0.5*((gk-tk).')*(gk-tk);
         
     end
     W = W - alpha.*nablaW_MSE;
-   % MSEs(m) = MSE;
+    MSEs(m) = norm(MSE);
     nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
 end
 %}
