@@ -73,27 +73,31 @@ end
 %testing the classifier:
 all_test_t = [repmat([1 0 0], (50-Ntrain), 1); repmat([0 1 0], (50-Ntrain), 1); repmat([0 0 1], (50-Ntrain), 1)]; 
 
-x_vec = [x_test, ones(C*Ntest, 1)];  
+x_vec= [xtest1, ones(50-Ntrain,1)]'; 
+z=W*x_vec; g=sigmoid(z); 
+chosen_class = g==max(g);
+fprintf('Setosa  \t&%i\t\t&%i\t\t\t& %i\\\\\n', sum(chosen_class(1,:)), sum(chosen_class(2,:)), sum(chosen_class(3,:)))
+%x_vec = [x_test, ones(C*Ntest, 1)];  
 disp(W);
 disp(x_vec); 
-z= W.*x_vec; 
-g= sigmoid(z); 
-
-testset_class = zeros(1,60); %totalt 60 test set
-testset_est= zeros(1,60); 
-
-for t=1:60
-    for c=1:3
-        if all_test_t(c,t) == max(all_test_t(:,t))
-            testset_class(t)= c; 
-        end
-        if g(c,t) == max(g(:,t))
-            testset_est(t) = c; 
-        end
-    end
-end
-
-
+%z= W.*x_vec; 
+% g= sigmoid(z); 
+% 
+% testset_class = zeros(1,60); %totalt 60 test set
+% testset_est= zeros(1,60); 
+% 
+% for t=1:60
+%     for c=1:3
+%         if all_test_t(c,t) == max(all_test_t(:,t))
+%             testset_class(t)= c; 
+%         end
+%         if g(c,t) == max(g(:,t))
+%             testset_est(t) = c; 
+%         end
+%     end
+% end
+% 
+% 
 % 
 % conf_matrix= zeros(C,C); % trenger en tabell som er 3x3, en med sann klasse, en med plassering. 
 % %fill inn confusion matrix: 
