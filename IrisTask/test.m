@@ -47,7 +47,7 @@ for m = 1:M
         xk = x_train(k,:).'; %legge in x = [xk' 1]' ?
         zk = W.*xk; %forenkle til zk = Wx?
     
-        gk = (1+exp(-zk)).^-1; %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+        gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
         
         %kopiert kode, bør endres
         tk = zeros(C,1);
@@ -71,39 +71,116 @@ end
 %W er den trente classsifier vi må benytte for å sortere test dataen
 
 %testing the classifier:
-all_test_t = [repmat([1 0 0], (50-Ntrain), 1); repmat([0 1 0], (50-Ntrain), 1); repmat([0 0 1], (50-Ntrain), 1)]; 
+% all_test_t = [repmat([1 0 0], (50-Ntrain), 1); repmat([0 1 0], (50-Ntrain), 1); repmat([0 0 1], (50-Ntrain), 1)]; 
+% % 
+% % x_vec = [x_test, ones(C*Ntest, 1)];  
+% % disp(W);
+% % disp(x_vec); 
+% % z= W.*x_vec; 
+% % g= sigmoid(z); 
+% % 
+% testset_class = zeros(1,60); %totalt 60 test set
+% testset_est= zeros(1,60); 
+% 
+% for t=1:60
+%     xk = x_train(k,:).'; %legge in x = [xk' 1]' ?
+%      zk = W.*xk; %forenkle til zk = Wx?
+%     
+%      gk = sigmoid(zk);
+%     for c=1:3
+%         if all_test_t(c,t) == max(all_test_t(:,t))
+%             testset_class(t)= c; 
+%         end
+%         if gk(c,t) == max(gk(:,t))
+%             testset_est(t) = c; 
+%         end
+%     end
+% end
+% 
+% disp(testset_class); 
 
-x_vec = [x_test, ones(C*Ntest, 1)];  
-disp(W);
-disp(x_vec); 
-z= W.*x_vec; 
-g= sigmoid(z); 
+all_test_t = [repmat([1 0 0], (Ntrain), 1); repmat([0 1 0], (Ntrain), 1); repmat([0 0 1], (Ntrain), 1)]';
+conf_matrix= zeros(C); % trenger en tabell som er 3x3, en med sann klasse, en med plassering. 
+%fill inn confusion matrix: 
+%disp(all_test_t(4,:));
+trainset_class=zeros(1,90); 
+trainset_est=zeros(1,90);
 
-testset_class = zeros(1,60); %totalt 60 test set
-testset_est= zeros(1,60); 
+x_vec_train= [x_train, ones(C*Ntrain,1), ones(C*Ntrain,1)]; %litt usikker på om jeg kan gjøre dette, men da kan jeg hvertfall multiplisere med W
+%xk=x_test(x,:).'; 
+zk=x_vec_train*W; %W skal vel være trent nå
+gk=sigmoid(zk);
 
-for t=1:60
+ for x=1:90 
     for c=1:3
-        if all_test_t(c,t) == max(all_test_t(:,t))
-            testset_class(t)= c; 
+        if all_test_t(c,x) == max(all_test_t(:,x))
+            trainset_class(x)=c;
         end
-        if g(c,t) == max(g(:,t))
-            testset_est(t) = c; 
+        if gk(x,c) == max(gk(x,:))
+            trainset_est(x)= c;
         end
     end
+ end
+
+%disp(trainset_est);
+
+
+all_test_t = [repmat([1 0 0], (50-Ntrain), 1); repmat([0 1 0], (50-Ntrain), 1); repmat([0 0 1], (50-Ntrain), 1)]';
+%disp(all_test_t(4,:));
+testset_class=zeros(1,60); 
+testset_est=zeros(1,60);
+
+x_vec_test= [x_test, ones(C*Ntest,1), ones(C*Ntest,1)]; %litt usikker på om jeg kan gjøre dette, men da kan jeg hvertfall multiplisere med W
+%disp(x_vec_test);
+%xk=x_test(x,:).'; 
+zk=x_vec_test*W; %W skal vel være trent nå
+%disp(zk);
+gk=sigmoid(zk);
+
+ for x=1:60 
+    for c=1:3
+        if all_test_t(c,x) == max(all_test_t(:,x))
+            testset_class(x)=c;
+        end
+        if gk(x,c) == max(gk(x,:))
+            testset_est(x)= c;
+        end
+    end
+ end
+
+conf_matrix= zeros(C); % trenger en tabell som er 3x3, en med sann klasse, en med plassering. 
+%fill inn confusion matrix: 
+length_test=length(testset_class); 
+for t=1:length_test
+    x=testset_class(t); 
+    y=testset_est(t); 
+    conf_matrix(x,y)= conf_matrix(x,y) +1;
 end
-
-
-% 
-% conf_matrix= zeros(C,C); % trenger en tabell som er 3x3, en med sann klasse, en med plassering. 
-% %fill inn confusion matrix: 
-% 
-% %for x=1:Ntest 
+disp(conf_matrix);
+    
+            
+% for x=1:Ntrain
+%      xk = x_train(k,:).'; %legge in x = [xk' 1]' ?
+%      zk = W.*xk; %forenkle til zk = Wx?
+%     
+%      gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+%         
+%      %kopiert kode, bør endres
+%      tk = zeros(C,1);
+%      c = floor((k-1)/Ntrain * C) + 1;
+%      tk(c) = 1;
+%      
+%      [g_max, c_max]=max(gk); 
+%      disp(zk); 
+%      conf_matrix(c,c_max) =  conf_matrix(c,c_max)+1; 
+%      
+%      
+% end
     
 
-
-%Plots 
-plot(nablaW_MSEs); 
-title('MSE gradient'); 
-ylabel('Magnitude');
-xlabel('iterations');
+% 
+% %Plots 
+% plot(nablaW_MSEs); 
+% title('MSE gradient'); 
+% ylabel('Magnitude');
+% xlabel('iterations');
