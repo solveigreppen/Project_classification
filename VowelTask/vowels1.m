@@ -1,6 +1,8 @@
 clear;
+D = 139;
 Ntrain = 70;
 Ntest = 69;
+Nclass = 12;
 [files,dur,F0s,F1s,F2s,F3s,F4s,F120,F220,F320,F150,F250,F350,F180,F280,F380] = textread('vowdata_nohead.dat','%s%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f%4.1f'); 
 nfiles = 1668;
 % character 1:     m=man, w=woman, b=boy, g=girl 
@@ -77,7 +79,13 @@ ae_tot = F0s(find(vowel_code==1));
 m2 = mean(ae_tot(1:Ntrain));
 %}
 
-%finner middelverdien til f0 hver vokal, lagrer disse i en felles vektor
+%Oppgave 1 a)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Sample mean for hver klasse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%finner middelverdien til f0 for hver vokalklasse, lagrer disse i en felles vektor
 means_F0 = zeros(1,12);     %kan gjøre tilsvarende for F1, F2, F3
 for i=1:12
     y = F0s(find(vowel_code==i));
@@ -98,14 +106,27 @@ for i=1:12
     means_F2(i) = mean(y(1:Ntrain));
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lager confusion matrix 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%prøver å lage en funksjon for å regne ut means
-%{
-function means = mean_tot(freq)
-    means = zeros(1,12);     %kan gjøre tilsvarende for F1, F2, F3
-    for i=1:12
-        y = freq(find(vowel_code==i));
-        means(i) = mean(y(1:Ntrain));
-    end  
+%cov_matrices = zeros(
+%for class = 1:12
+
+cov_matrices = zeros(Nclass,Nclass^2); %matrise som inneholder alle 12 cov.matrisene
+for i = 1:Nclass
+    cov_matrix = zeros(Nclass);
+    for k = 1:D
+        u_i = means_F0(i);
+        x_k = F0s(k);
+        cov_matrix = cov_matrix + (x_k-u_i)*((x_k-u_i).');
+    end
+    cov_matrix = cov_matrix./D;
+    cov_matrices(:,(i-1)*12+1:(i*12)) = cov_matrix;
 end
-%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1b: designe gaussian classifier
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
