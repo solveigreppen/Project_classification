@@ -166,7 +166,7 @@ xlabel('iterations');
 % Oppgave 1 d
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%{
+
 
 alpha_2 = 0.008; %teste seg fram med denne
 W0_2 = zeros(C,D); 
@@ -200,7 +200,7 @@ for m = 1:M
             zk = W_2*x; %forenkle til zk = Wx?
            
             gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
-            g_all(k,:) = gk';
+            g_all_2(k,:) = gk';
             %kopiert kode, bør endres
             tk = zeros(C,1);
             c = floor((k-1)/(Ntrain*C)*C) + 1;
@@ -259,7 +259,7 @@ end
 
 for x = 1:C*Ntest
     for c = 1:C
-        if g_all_test(x,c) == max(g_all_test(x,:))
+        if g_all_test_2(x,c) == max(g_all_test_2(x,:))
             testset_est_2(x)= c;
         end
     end
@@ -299,4 +299,3 @@ end
 
 error_rate_train_2 = sum_error_train_2/Ntrain;
 error_rate_test_2 = sum_error_test_2/Ntest;
-%}
