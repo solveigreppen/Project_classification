@@ -9,7 +9,7 @@ Ntest = 20;
 C = 3; % # classes
 D = 4; % feature dimension
 M = 1000; % # iterations (velger vi denne størrelsen selv?)
-alpha = 0.005; %teste seg fram med denne
+alpha = 0.008; %teste seg fram med denne
 W0 = zeros(C,D); 
 w0 = zeros(C,1); 
 W = [W0 w0]; %forenkler W til senere uttrykk
@@ -47,9 +47,6 @@ x_test = [x1_test; x2_test; x3_test]; %60x4
 for m = 1:M
     nablaW_MSE = 0;
     MSE=0; 
-    
-    %legg inn for-løkke for i=1:3 --> fyller inn for alle klassene
-    %for class = 1:3
         
         for k = 1:Ntrain*C
             xk = x_train(k,:)';
@@ -73,13 +70,7 @@ for m = 1:M
     nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
 end
 
-%}
-%{
-all_test_t = [repmat([1 0 0], (Ntrain), 1); repmat([0 1 0], (Ntrain), 1); repmat([0 0 1], (Ntrain), 1)]';
-conf_matrix= zeros(C); % trenger en tabell som er 3x3, en med sann klasse, en med plassering. 
-%fill inn confusion matrix: 
-%disp(all_test_t(4,:));
-%}
+
 trainset_class=zeros(1,90);
 %fyller inn sanne verdier
 trainset_class(1,1:Ntrain) = 1;
@@ -170,3 +161,142 @@ plot(nablaW_MSEs);
 title('MSE gradient'); 
 ylabel('Magnitude');
 xlabel('iterations');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Oppgave 1 d
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%{
+
+alpha_2 = 0.008; %teste seg fram med denne
+W0_2 = zeros(C,D); 
+w0_2 = zeros(C,1); 
+W_2 = [W0_2 w0_2]; %forenkler W til senere uttrykk
+nablaW_MSEs_2 = zeros(1,M);
+MSEs_2= zeros(1,M); %creating space for the matrix
+g_all_2 = zeros(Ntrain*C,C); %er denne nødvendig?
+
+x4_train = x1all(Ntest+1:end,:);
+x5_train = x2all(Ntest+1:end,:);
+x6_train = x3all(Ntest+1:end,:);
+x2_train = [x4_train; x5_train; x6_train]; %90x4
+
+% test sets
+
+x4_test = x1all(1:Ntest,:);
+x5_test = x2all(1:Ntest,:);
+x6_test = x3all(1:Ntest,:);
+x_test_2 = [x4_test; x5_test; x6_test]; %60x4
+
+
+%training the classifier
+for m = 1:M
+    nablaW_MSE_2 = 0;
+    MSE_2=0; 
+    
+        for k = 1:Ntrain*C
+            xk = x2_train(k,:)';
+            x = [xk' 1]';
+            zk = W_2*x; %forenkle til zk = Wx?
+           
+            gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+            g_all(k,:) = gk';
+            %kopiert kode, bør endres
+            tk = zeros(C,1);
+            c = floor((k-1)/(Ntrain*C)*C) + 1;
+            tk(c) = 1;
+       
+            MSE2 = (gk-tk).*(gk).*(1-gk);     
+            nablaW_MSE_2 = nablaW_MSE_2 + MSE2*x';
+            MSE_2 = MSE_2 + 0.5*(gk-tk)'*(gk-tk);
+        end
+    %end
+    W_2 = W_2 - alpha_2.*nablaW_MSE_2;
+    MSEs_2(m) = MSE_2; %brukes til å tune alpha til riktig verdi (konvergering)
+    nablaW_MSEs_2(m) = norm(nablaW_MSE_2); %riktig å gjøre det sånn?
+end
+
+trainset_class_2=zeros(1,90);
+%fyller inn sanne verdier
+trainset_class_2(1,1:Ntrain) = 1;
+trainset_class_2(1,31:60) = 2;
+trainset_class_2(1,61:90) = 3;
+
+trainset_est_2=zeros(1,90);
+
+
+ for x=1:Ntrain*C 
+    for c=1:C
+        %{
+        if all_test_t(c,x) == max(all_test_t(:,x))
+            trainset_class(x)=c;
+        end
+        %}
+        if g_all_2(x,c) == max(g_all_2(x,:))
+            trainset_est_2(x)= c;
+        end
+    end
+ end
+
+testset_class_2 = zeros(1,60);
+%fyller inn sanne verdier
+testset_class_2(1,1:20) = 1;
+testset_class_2(1,21:40) = 2;
+testset_class_2(1,41:60) = 3;
+
+testset_est_2 = zeros(1,60);
+g_all_test_2 = zeros(C*Ntest,C);
+
+for k=1:C*Ntest
+    xk = x_test_2(k,:)';
+    x = [xk' 1]';
+    zk = W_2*x; 
+           
+    gk_test_2 = sigmoid(zk); 
+    g_all_test_2(k,:) = gk_test_2';
+    
+end
+
+for x = 1:C*Ntest
+    for c = 1:C
+        if g_all_test(x,c) == max(g_all_test(x,:))
+            testset_est_2(x)= c;
+        end
+    end
+end
+
+%confusion matrix for train set
+conf_matrix_2= zeros(C);  
+for t=1:Ntrain*C
+    x=trainset_class_2(t); 
+    y=trainset_est_2(t); 
+    conf_matrix_2(x,y)= conf_matrix_2(x,y) +1;
+end
+disp(conf_matrix_2);
+
+%confusion matrix for test set
+conf_matrix_test_2= zeros(C);  
+for t=1:Ntest*C
+    x=testset_class_2(t); 
+    y=testset_est_2(t); 
+    conf_matrix_test_2(x,y)= conf_matrix_test_2(x,y) +1;
+end
+disp(conf_matrix_test_2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Finner error rate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sum_error_train_2=0;
+sum_error_test_2=0;
+for i = 1:C
+    for j = 1:C
+        if j ~= i
+            sum_error_train_2 = sum_error_train_2 +conf_matrix_2(j,i);
+            sum_error_test_2 = sum_error_test_2 +conf_matrix_test_2(j,i);
+        end
+    end
+end
+
+error_rate_train_2 = sum_error_train_2/Ntrain;
+error_rate_test_2 = sum_error_test_2/Ntest;
+%}
