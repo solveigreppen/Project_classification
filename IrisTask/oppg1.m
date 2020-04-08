@@ -157,17 +157,19 @@ error_rate_test = sum_error_test/Ntest;
 
 
 %Plots 
+%{
 plot(nablaW_MSEs); 
 title('MSE gradient'); 
 ylabel('Magnitude');
 xlabel('iterations');
+%}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Oppgave 1 d
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
+%{
 alpha_2 = 0.008; %teste seg fram med denne
 W0_2 = zeros(C,D); 
 w0_2 = zeros(C,1); 
@@ -299,3 +301,107 @@ end
 
 error_rate_train_2 = sum_error_train_2/Ntrain;
 error_rate_test_2 = sum_error_test_2/Ntest;
+%}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Oppgave 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%{
+x = F0s(find(talker_group_code==1));   
+figure(1);   
+subplot(2,2,1);   
+hist(x,20);  % use 20 “bins”   
+set(gca,'XLim',[50 500]);  % set x-axis limits between 50 & 500 Hz   
+%xlim([50 500]);
+title('adult males')
+%}
+
+xh = x1_train(:,1);
+figure(1);
+subplot(3,4,1);
+hist(xh,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 1, sepal length');
+
+xh2 = x1_train(:,2);
+figure(1);
+subplot(3,4,2);
+hist(xh2,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 1, sepal width');
+
+xh3 = x1_train(:,3);
+figure(1);
+subplot(3,4,3);
+hist(xh3,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 1, petal length');
+
+xh4 = x1_train(:,4);
+figure(1);
+subplot(3,4,4);
+hist(xh4,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 1, petal width');
+
+xh5 = x2_train(:,1);
+figure(1);
+subplot(3,4,5);
+hist(xh5,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 2, sepal length');
+
+xh6 = x2_train(:,2);
+figure(1);
+subplot(3,4,6);
+hist(xh6,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 2, sepal width');
+
+xh7 = x2_train(:,3);
+figure(1);
+subplot(3,4,7);
+hist(xh7,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 2, petal length');
+
+xh8 = x2_train(:,4);
+figure(1);
+subplot(3,4,8);
+hist(xh8,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 2, petal width');
+
+xh9 = x3_train(:,1);
+figure(1);
+subplot(3,4,9);
+hist(xh9,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 3, sepal length');
+
+xh10 = x3_train(:,2);
+figure(1);
+subplot(3,4,10);
+hist(xh10,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 3, sepal width');
+
+xh7 = x3_train(:,3);
+figure(1);
+subplot(3,4,11);
+hist(xh7,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 3, petal length');
+
+xh12 = x3_train(:,4);
+figure(1);
+subplot(3,4,12);
+hist(xh12,20)
+set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+title('Class 3, petal width');
+
+%the sepal width-feature has the biggest overlap between the classes - we
+%remove this one
+
