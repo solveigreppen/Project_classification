@@ -22,21 +22,13 @@ x1all = load('class_1','-ascii');
 x2all = load('class_2','-ascii');
 x3all = load('class_3','-ascii');
 
-% petal widths in cm
-%{
-x1= [x1all(:,4)];
-x2= [x2all(:,4)];
-x3= [x3all(:,4)];
-%}
-% train sets
-
+%train sets
 x1_train = x1all(1:Ntrain,:);
 x2_train = x2all(1:Ntrain,:);
 x3_train = x3all(1:Ntrain,:);
 x_train = [x1_train; x2_train; x3_train]; %90x4
 
 % test sets
-
 x1_test = x1all(Ntrain+1:end,:);
 x2_test = x2all(Ntrain+1:end,:);
 x3_test = x3all(Ntrain+1:end,:);
@@ -127,6 +119,7 @@ for t=1:Ntrain*C
     y=trainset_est(t); 
     conf_matrix(x,y)= conf_matrix(x,y) +1;
 end
+disp('Confusion matrix, train set, four features');
 disp(conf_matrix);
 
 %confusion matrix for test set
@@ -136,6 +129,7 @@ for t=1:Ntest*C
     y=testset_est(t); 
     conf_matrix_test(x,y)= conf_matrix_test(x,y) +1;
 end
+disp('Confusion matrix, test set, four features');
 disp(conf_matrix_test);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -318,90 +312,217 @@ set(gca,'XLim',[50 500]);  % set x-axis limits between 50 & 500 Hz
 title('adult males')
 %}
 
+%{
 xh = x1_train(:,1);
 figure(1);
 subplot(3,4,1);
 hist(xh,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[4 8]);  % set x-axis limits between 0-10  
 title('Class 1, sepal length');
 
 xh2 = x1_train(:,2);
 figure(1);
 subplot(3,4,2);
 hist(xh2,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[1.5 4.5]);  % set x-axis limits between 0-10  
 title('Class 1, sepal width');
 
 xh3 = x1_train(:,3);
 figure(1);
 subplot(3,4,3);
 hist(xh3,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0.5 7.5]);  % set x-axis limits between 0-10  
 title('Class 1, petal length');
 
 xh4 = x1_train(:,4);
 figure(1);
 subplot(3,4,4);
 hist(xh4,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 3]);  % set x-axis limits between 0-10  
 title('Class 1, petal width');
 
 xh5 = x2_train(:,1);
 figure(1);
 subplot(3,4,5);
 hist(xh5,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[4 8]);  % set x-axis limits between 0-10  
 title('Class 2, sepal length');
 
 xh6 = x2_train(:,2);
 figure(1);
 subplot(3,4,6);
 hist(xh6,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[1.5 4.5]);  % set x-axis limits between 0-10  
 title('Class 2, sepal width');
 
 xh7 = x2_train(:,3);
 figure(1);
 subplot(3,4,7);
 hist(xh7,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0.5 7.5]);  % set x-axis limits between 0-10  
 title('Class 2, petal length');
 
 xh8 = x2_train(:,4);
 figure(1);
 subplot(3,4,8);
 hist(xh8,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 3]);  % set x-axis limits between 0-10  
 title('Class 2, petal width');
 
 xh9 = x3_train(:,1);
 figure(1);
 subplot(3,4,9);
 hist(xh9,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[4 8]);  % set x-axis limits between 0-10  
 title('Class 3, sepal length');
 
 xh10 = x3_train(:,2);
 figure(1);
 subplot(3,4,10);
 hist(xh10,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[1.5 4.5]);  % set x-axis limits between 0-10  
 title('Class 3, sepal width');
 
-xh7 = x3_train(:,3);
+xh11 = x3_train(:,3);
 figure(1);
 subplot(3,4,11);
-hist(xh7,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+hist(xh11,20)
+set(gca,'XLim',[0.5 7.5]);  % set x-axis limits between 0-10  
 title('Class 3, petal length');
 
 xh12 = x3_train(:,4);
 figure(1);
 subplot(3,4,12);
 hist(xh12,20)
-set(gca,'XLim',[0 10]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 3]);  % set x-axis limits between 0-10  
 title('Class 3, petal width');
+%}
 
 %the sepal width-feature has the biggest overlap between the classes - we
 %remove this one
 
+W0_3 = zeros(C);
+W_3 = [W0_3 w0];
+nablaW_MSEs_3 = zeros(1,M);
+MSEs_3= zeros(1,M); %creating space for the matrix
+g_all_3 = zeros(Ntrain*C,C); %er denne nødvendig?
+
+%train sets. Removes the second feature
+x1_train_3 = x1_train;
+x1_train_3(:,2) = [];
+
+x2_train_3 = x2_train;
+x2_train_3(:,2) = [];
+
+x3_train_3 = x3_train;
+x3_train_3(:,2) = [];
+
+x_train_3 = [x1_train_3; x2_train_3; x3_train_3]; %90x4
+
+% test sets
+x1_test_3 = x1_test;
+x1_test_3(:,2) = [];
+
+x2_test_3 = x2_test;
+x2_test_3(:,2) = [];
+
+x3_test_3 = x3_test;
+x3_test_3(:,2) = [];
+
+x_test_3 = [x1_test_3; x2_test_3; x3_test_3]; %90x4
+
+%training the classifier
+for m = 1:M
+    nablaW_MSE_3 = 0;
+    MSE_3=0; 
+        
+        for k = 1:Ntrain*C
+            xk = x_train_3(k,:)';
+            x = [xk' 1]';
+            zk = W_3*x; %forenkle til zk = Wx?
+           
+            gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+            g_all_3(k,:) = gk';
+            %kopiert kode, bør endres
+            tk = zeros(C,1);
+            c = floor((k-1)/(Ntrain*C)*C) + 1;
+            tk(c) = 1;
+       
+            MSE1 = (gk-tk).*(gk).*(1-gk);     
+            nablaW_MSE_3 = nablaW_MSE_3 + MSE1*x';
+            MSE_3 = MSE + 0.5*(gk-tk)'*(gk-tk);
+        end
+    %end
+    W_3 = W_3 - alpha.*nablaW_MSE_3;
+    MSEs_3(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
+    nablaW_MSEs_3(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
+end
+
+trainset_class_3=zeros(1,90);
+%fyller inn sanne verdier
+trainset_class_3(1,1:Ntrain) = 1;
+trainset_class_3(1,31:60) = 2;
+trainset_class_3(1,61:90) = 3;
+
+trainset_est_3=zeros(1,90);
+
+
+ for x=1:Ntrain*C 
+    for c=1:C
+        %{
+        if all_test_t(c,x) == max(all_test_t(:,x))
+            trainset_class(x)=c;
+        end
+        %}
+        if g_all_3(x,c) == max(g_all_3(x,:))
+            trainset_est_3(x)= c;
+        end
+    end
+ end
+
+testset_class_3 = zeros(1,60);
+%fyller inn sanne verdier
+testset_class_3(1,1:20) = 1;
+testset_class_3(1,21:40) = 2;
+testset_class_3(1,41:60) = 3;
+
+testset_est_3 = zeros(1,60);
+g_all_test_3 = zeros(C*Ntest,C);
+
+for k=1:C*Ntest
+    xk = x_test_3(k,:)';
+    x = [xk' 1]';
+    zk = W_3*x; 
+           
+    gk_test_3 = sigmoid(zk); 
+    g_all_test_3(k,:) = gk_test_3';
+    
+end
+
+for x = 1:C*Ntest
+    for c = 1:C
+        if g_all_test_3(x,c) == max(g_all_test_3(x,:))
+            testset_est_3(x)= c;
+        end
+    end
+end
+
+%confusion matrix for train set
+conf_matrix_3= zeros(C);  
+for t=1:Ntrain*C
+    x=trainset_class_3(t); 
+    y=trainset_est_3(t); 
+    conf_matrix_3(x,y)= conf_matrix_3(x,y) +1;
+end
+disp('Confusion matrix, train set, three features');
+disp(conf_matrix_3);
+
+%confusion matrix for test set
+conf_matrix_test_3= zeros(C);  
+for t=1:Ntest*C
+    x=testset_class_3(t); 
+    y=testset_est_3(t); 
+    conf_matrix_test_3(x,y)= conf_matrix_test_3(x,y) +1;
+end
+disp('Confusion matrix, test set, three features');
+disp(conf_matrix_test_3);
