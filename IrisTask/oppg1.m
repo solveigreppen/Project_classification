@@ -150,6 +150,8 @@ error_rate_train = sum_error_train/Ntrain;
 error_rate_test = sum_error_test/Ntest;
 
 
+
+
 %Plots 
 %{
 plot(nablaW_MSEs); 
@@ -533,6 +535,9 @@ end
 conf_matrix_train_4= compute_confusion(C, Ntrain, trainset_class_4, trainset_est_4); 
 disp('Confusion matrix, train set, two features');
 disp(conf_matrix_train_4);
+error4 = compute_error(C,Ntrain,conf_matrix_train_4);
+disp('Error 4:');
+disp(error4);
 
 
 conf_matrix_test_4 = compute_confusion(C, Ntest, testset_class_4, testset_est_4); 
@@ -653,6 +658,18 @@ truevalues=zeros(1,C*N);
 truevalues(1, 1:N)=1; 
 truevalues(1, (N+1):(N*2))=2; 
 truevalues(1, (N*2+1):(N*C))=3; 
+end
+
+function error_rate = compute_error(C,N,conf_mat)
+sum_error=0;
+for i = 1:C
+    for j = 1:C
+        if j ~= i           
+            sum_error = sum_error +conf_mat(j,i);
+        end
+    end
+end
+error_rate = sum_error/N;
 end
 
 %%heihei
