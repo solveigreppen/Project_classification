@@ -44,7 +44,12 @@ for m = 1:M
     MSE=0; 
         
         for k = 1:Ntrain*C
-           [gk, x]=g_value(k, x_train, W);
+            xk = x_train(k,:)';
+            x = [xk' 1]';
+            zk = W*x; %forenkle til zk = Wx?
+           
+            gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+            
             g_all(k,:) = gk';
             %kopiert kode, bør endres
             tk = zeros(C,1);
@@ -94,12 +99,12 @@ testset_est = zeros(1,60);
 g_all_test = zeros(C*Ntest,C);
 
 for k=1:C*Ntest
-    [gk_test, x] = g_value(k, x_test, W); 
-%     xk = x_test(k,:)';
-%     x = [xk' 1]'; %spørre solveig om denne, hvorfor transposer man to ganger
-%     zk = W*x; 
+    %[gk_test, x] = g_value(k, x_test, W); 
+    xk = x_test(k,:)';
+    x = [xk' 1]'; %spørre solveig om denne, hvorfor transposer man to ganger
+    zk = W*x; 
            
-    %gk_test = sigmoid(zk); 
+    gk_test = sigmoid(zk); 
     g_all_test(k,:) = gk_test';
     
 end
