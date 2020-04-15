@@ -41,13 +41,12 @@ for m = 1:M
     MSE=0; 
         
         for k = 1:Ntrain*C
-            [gk, x]=g_value(k, x_train, W);
-%             xk = x_train(k,:)';
-%             x = [xk' 1]';
-%             disp(x);
-%             zk = W*x; %forenkle til zk = Wx?
-%            
-%             gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+            xk = x_train(k,:)';
+            x = [xk' 1]';
+            disp(x);
+            zk = W*x; %forenkle til zk = Wx?
+           
+            gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
             g_all(k,:) = gk';
             %kopiert kode, bør endres
             tk = zeros(C,1);
@@ -529,13 +528,12 @@ end
 disp('Confusion matrix, test set, three features');
 disp(conf_matrix_test_3);
 
-%plasserers i en loop der i er den itererende tingen. 
-function [g,x] = g_value(i, x_vec, Weight)
- xk=x_vec(i,:)'; 
+%plasserers 
+function g = g_value(i, x_vec, Weight)
+ xk=x_vec(k,:)'; 
  x=[xk' 1]'; 
  zk=Weight*x; 
  g=sigmoid(zk);
-end
     
   
     
