@@ -38,28 +38,28 @@ x_test = [x1_test; x2_test; x3_test]; %60x4
 
 %training the classifier
 % %function [W, MSEs, nablaW_MSEs] = train_classifier(M, N, C, x_vec, Weight)
-[W,MSEs, g_all]=train_classifier(M, Ntrain, C, x_train, W, alpha);  
-% for m = 1:M
-%     nablaW_MSE = 0;
-%     MSE=0; 
-%         
-%         for k = 1:Ntrain*C
-%            [gk, x]=g_value(k, x_train, W);
-%             g_all(k,:) = gk';
-%             %kopiert kode, bør endres
-%             tk = zeros(C,1);
-%             c = floor((k-1)/(Ntrain*C)*C) + 1;
-%             tk(c) = 1;
-%        
-%             MSE1 = (gk-tk).*(gk).*(1-gk);     
-%             nablaW_MSE = nablaW_MSE + MSE1*x';
-%             MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
-%         end
-%     %end
-%     W = W - alpha.*nablaW_MSE;
-%     MSEs(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
-%     nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
-% end
+%[W,MSEs, g_all]=train_classifier(M, Ntrain, C, x_train, W, alpha);  
+for m = 1:M
+    nablaW_MSE = 0;
+    MSE=0; 
+        
+        for k = 1:Ntrain*C
+           [gk, x]=g_value(k, x_train, W);
+            g_all(k,:) = gk';
+            %kopiert kode, bør endres
+            tk = zeros(C,1);
+            c = floor((k-1)/(Ntrain*C)*C) + 1;
+            tk(c) = 1;
+       
+            MSE1 = (gk-tk).*(gk).*(1-gk);     
+            nablaW_MSE = nablaW_MSE + MSE1*x';
+            MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
+        end
+    %end
+    W = W - alpha.*nablaW_MSE;
+    MSEs(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
+    nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
+end
 
 
 trainset_class=zeros(1,90);
@@ -408,19 +408,16 @@ MSEs_3= zeros(1,M); %creating space for the matrix
 g_all_3 = zeros(Ntrain*C,C); %er denne nødvendig?
 
 %train sets. Removes the second feature
-x_train_3 = x_train; 
-x_train_3(:,2)=[]; 
+x1_train_3 = x1_train;
+x1_train_3(:,2) = [];
 
-% x1_train_3 = x1_train;
-% x1_train_3(:,2) = [];
-% 
-% x2_train_3 = x2_train;
-% x2_train_3(:,2) = [];
-% 
-% x3_train_3 = x3_train;
-% x3_train_3(:,2) = [];
-% 
-% x_train_3 = [x1_train_3; x2_train_3; x3_train_3]; %90x4
+x2_train_3 = x2_train;
+x2_train_3(:,2) = [];
+
+x3_train_3 = x3_train;
+x3_train_3(:,2) = [];
+
+x_train_3 = [x1_train_3; x2_train_3; x3_train_3]; %90x4
 
 % test sets
 x1_test_3 = x1_test;
@@ -435,40 +432,37 @@ x3_test_3(:,2) = [];
 x_test_3 = [x1_test_3; x2_test_3; x3_test_3]; %90x4
 
 % %training the classifier
-% function [W, MSEs, g_all] = train_classifier(M, N, C, x_vec, W, alpha) 
-[W_3, MSEs_3, g_all_3]=train_classifier(M, Ntrain, C, x_train_3, W_3, alpha); 
-% for m = 1:M
-%     nablaW_MSE_3 = 0;
-%     MSE_3=0; 
-%         
-%         for k = 1:Ntrain*C
-%             xk = x_train_3(k,:)';
-%             x = [xk' 1]';
-%             zk = W_3*x; %forenkle til zk = Wx?
-%            
-%             gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
-%             g_all_3(k,:) = gk';
-%             %kopiert kode, bør endres
-%             tk = zeros(C,1);
-%             c = floor((k-1)/(Ntrain*C)*C) + 1;
-%             tk(c) = 1;
-%        
-%             MSE1 = (gk-tk).*(gk).*(1-gk);     
-%             nablaW_MSE_3 = nablaW_MSE_3 + MSE1*x';
-%             MSE_3 = MSE1 + 0.5*(gk-tk)'*(gk-tk);
-%         end
-%     %end
-%     W_3 = W_3 - alpha.*nablaW_MSE_3;
-%     MSEs_3(m) = MSE_3; %brukes til å tune alpha til riktig verdi (konvergering)
-%     nablaW_MSEs_3(m) = norm(nablaW_MSE_3); %riktig å gjøre det sånn?
-% end
-trainset_class_3=fill_in_truevalues(C,Ntrain); 
+for m = 1:M
+    nablaW_MSE_3 = 0;
+    MSE_3=0; 
+        
+        for k = 1:Ntrain*C
+            xk = x_train_3(k,:)';
+            x = [xk' 1]';
+            zk = W_3*x; %forenkle til zk = Wx?
+           
+            gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
+            g_all_3(k,:) = gk';
+            %kopiert kode, bør endres
+            tk = zeros(C,1);
+            c = floor((k-1)/(Ntrain*C)*C) + 1;
+            tk(c) = 1;
+       
+            MSE1 = (gk-tk).*(gk).*(1-gk);     
+            nablaW_MSE_3 = nablaW_MSE_3 + MSE1*x';
+            MSE_3 = MSE + 0.5*(gk-tk)'*(gk-tk);
+        end
+    %end
+    W_3 = W_3 - alpha.*nablaW_MSE_3;
+    MSEs_3(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
+    nablaW_MSEs_3(m) = norm(nablaW_MSE_3); %riktig å gjøre det sånn?
+end
 
-% trainset_class_3=zeros(1,90);
-% %fyller inn sanne verdier
-% trainset_class_3(1,1:Ntrain) = 1;
-% trainset_class_3(1,31:60) = 2;
-% trainset_class_3(1,61:90) = 3;
+trainset_class_3=zeros(1,90);
+%fyller inn sanne verdier
+trainset_class_3(1,1:Ntrain) = 1;
+trainset_class_3(1,31:60) = 2;
+trainset_class_3(1,61:90) = 3;
 
 trainset_est_3=zeros(1,90);
 
@@ -485,18 +479,22 @@ trainset_est_3=zeros(1,90);
         end
     end
  end
-testset_class_3=fill_in_truevalues(C, Ntest); 
-% testset_class_3 = zeros(1,60);
-% %fyller inn sanne verdier
-% testset_class_3(1,1:20) = 1;
-% testset_class_3(1,21:40) = 2;
-% testset_class_3(1,41:60) = 3;
-% 
+
+testset_class_3 = zeros(1,60);
+%fyller inn sanne verdier
+testset_class_3(1,1:20) = 1;
+testset_class_3(1,21:40) = 2;
+testset_class_3(1,41:60) = 3;
+
 testset_est_3 = zeros(1,60);
 g_all_test_3 = zeros(C*Ntest,C);
 
 for k=1:C*Ntest
-    gk_test_3= g_value(k, x_test_3, W_3); 
+    xk = x_test_3(k,:)';
+    x = [xk' 1]';
+    zk = W_3*x; 
+           
+    gk_test_3 = sigmoid(zk); 
     g_all_test_3(k,:) = gk_test_3';
     
 end
@@ -510,26 +508,36 @@ for x = 1:C*Ntest
 end
 
 %confusion matrix for train set
-conf_matrix_train_3= compute_confusion(C, Ntrain, trainset_class_3, trainset_est_3); 
-disp('Confusion matrix, train set, three features');
-disp(conf_matrix_train_3);
+conf_matrix_3= zeros(C);  
+for t=1:Ntrain*C
+    x=trainset_class_3(t); 
+    y=trainset_est_3(t); 
+    conf_matrix_3(x,y)= conf_matrix_3(x,y) +1;
+end
+% disp('Confusion matrix, train set, three features');
+% disp(conf_matrix_3);
 
 %confusion matrix for test set
-conf_matrix_test_3 = compute_confusion(C, Ntest, testset_class_3, testset_est_3); 
-disp('Confusion matrix, test set, three features');
-disp(conf_matrix_test_3);
+conf_matrix_test_3= zeros(C);  
+for t=1:Ntest*C
+    x=testset_class_3(t); 
+    y=testset_est_3(t); 
+    conf_matrix_test_3(x,y)= conf_matrix_test_3(x,y) +1;
+end
+% disp('Confusion matrix, test set, three features');
+% disp(conf_matrix_test_3);
 
 
 %funskjon for å trene classifieren 
 
 
-function [W_0, MSEs_0, g_all_0] = train_classifier(M, N, C, x_vec, W_0, alpha) 
+function [W, MSEs, g_all] = train_classifier(M, N, C, x_vec, W, alpha) 
 for m=1:M
     nablaW_MSE=0; 
     MSE=0;
     for k=1:N*C
-        [gk,x]=g_value(k, x_vec, W_0); 
-        g_all_0(k,:) = gk';
+        [gk,x]=g_value(k, x_vec, W); 
+        g_all(k,:) = gk';
         tk=zeros(C,1);
         c = floor((k-1)/(N*C)*C) + 1;
         tk(c)=1; 
@@ -537,8 +545,8 @@ for m=1:M
         nablaW_MSE = nablaW_MSE + MSE1*x';
         MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
     end
-    W_0 = W_0 - alpha.*nablaW_MSE;
-    MSEs_0(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
+    W = W - alpha.*nablaW_MSE;
+    MSEs(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
     %nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
 end
 end
@@ -550,114 +558,4 @@ function [g,x] = g_value(i, x_vec, Weight) %x_vec er vectoren som inneholder all
  zk=Weight*x; 
  g=sigmoid(zk);
 end
-
-function conf_mat = compute_confusion(C,N, set_class, set_est)  
-    conf_mat=zeros(C);
-    for t=1:N*C
-        x=set_class(t); 
-        y=set_est(t); 
-        conf_mat(x,y)=conf_mat(x,y)+1; 
-    end
-end
-
-function truevalues = fill_in_truevalues(C,N)
-truevalues=zeros(1,C*N);
-truevalues(1, 1:N)=1; 
-truevalues(1, (N+1):(N*2))=2; 
-truevalues(1, (N*2+1):(N*C))=3; 
-end
-
-% function [train_removed, test_removed] = remove_feature(r, trainset, testset) %r is the number of which feature we wish to remove
-% train_removed=trainset; 
-% train_removed(:,r)=[];
-% 
-% end
-
-% %train sets. Removes the second feature
-% x1_train_3 = x1_train;
-% x1_train_3(:,2) = [];
-% 
-% x2_train_3 = x2_train;
-% x2_train_3(:,2) = [];
-% 
-% x3_train_3 = x3_train;
-% x3_train_3(:,2) = [];
-% 
-% x_train_3 = [x1_train_3; x2_train_3; x3_train_3]; %90x4
-% 
-% % test sets
-% x1_test_3 = x1_test;
-% x1_test_3(:,2) = [];
-% 
-% x2_test_3 = x2_test;
-% x2_test_3(:,2) = [];
-% 
-% x3_test_3 = x3_test;
-% x3_test_3(:,2) = [];
-% 
-% x_test_3 = [x1_test_3; x2_test_3; x3_test_3]; %90x4
-
-
-% % confusion matrix for test set
-% conf_matrix_test_3= zeros(C);  
-% for t=1:Ntest*C
-%     x=testset_class_3(t); 
-%     y=testset_est_3(t); 
-%     conf_matrix_test_3(x,y)= conf_matrix_test_3(x,y) +1;
-% end
-%     
-% for m = 1:M
-%     nablaW_MSE_3 = 0;
-%     MSE_3=0; 
-%         
-%         for k = 1:Ntrain*C
-%             xk = x_train_3(k,:)';
-%             x = [xk' 1]';
-%             zk = W_3*x; %forenkle til zk = Wx?
-%            
-%             gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
-%             g_all_3(k,:) = gk';
-%             %kopiert kode, bør endres
-%             tk = zeros(C,1);
-%             c = floor((k-1)/(Ntrain*C)*C) + 1;
-%             tk(c) = 1;
-%        
-%             MSE1 = (gk-tk).*(gk).*(1-gk);     
-%             nablaW_MSE_3 = nablaW_MSE_3 + MSE1*x';
-%             MSE_3 = MSE1 + 0.5*(gk-tk)'*(gk-tk);
-%         end
-%     %end
-%     W_3 = W_3 - alpha.*nablaW_MSE_3;
-%     MSEs_3(m) = MSE_3; %brukes til å tune alpha til riktig verdi (konvergering)
-%     nablaW_MSEs_3(m) = norm(nablaW_MSE_3); %riktig å gjøre det sånn?
-% end
-
-
-% %training the classifier
-% for m = 1:M
-%     nablaW_MSE = 0;
-%     MSE=0; 
-%         
-%         for k = 1:Ntrain*C
-%             [gk, x]=g_value(k, x_train, W);
-% %             xk = x_train(k,:)';
-% %             x = [xk' 1]';
-% %             disp(x);
-% %             zk = W*x; %forenkle til zk = Wx?
-% %            
-% %             gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
-%             g_all(k,:) = gk';
-%             %kopiert kode, bør endres
-%             tk = zeros(C,1);
-%             c = floor((k-1)/(Ntrain*C)*C) + 1;
-%             tk(c) = 1;
-%        
-%             MSE1 = (gk-tk).*(gk).*(1-gk);     
-%             nablaW_MSE = nablaW_MSE + MSE1*x';
-%             MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
-%         end
-%     %end
-%     W = W - alpha.*nablaW_MSE;
-%     MSEs(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
-%     nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
-% end
+    
