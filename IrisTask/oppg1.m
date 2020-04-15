@@ -654,3 +654,5 @@ truevalues(1, 1:N)=1;
 truevalues(1, (N+1):(N*2))=2; 
 truevalues(1, (N*2+1):(N*C))=3; 
 end
+
+%%heihei
