@@ -39,67 +39,25 @@ x_test = [x1_test; x2_test; x3_test]; %60x4
 %training the classifier
 % %function [W, MSEs, nablaW_MSEs] = train_classifier(M, N, C, x_vec, Weight)
 [W,MSEs, g_all]=train_classifier(M, Ntrain, C, x_train, W, alpha);  
-% for m = 1:M
-%     nablaW_MSE = 0;
-%     MSE=0; 
-%         
-%         for k = 1:Ntrain*C
-%            [gk, x]=g_value(k, x_train, W);
-%             g_all(k,:) = gk';
-%             %kopiert kode, bør endres
-%             tk = zeros(C,1);
-%             c = floor((k-1)/(Ntrain*C)*C) + 1;
-%             tk(c) = 1;
-%        
-%             MSE1 = (gk-tk).*(gk).*(1-gk);     
-%             nablaW_MSE = nablaW_MSE + MSE1*x';
-%             MSE = MSE + 0.5*(gk-tk)'*(gk-tk);
-%         end
-%     %end
-%     W = W - alpha.*nablaW_MSE;
-%     MSEs(m) = MSE; %brukes til å tune alpha til riktig verdi (konvergering)
-%     nablaW_MSEs(m) = norm(nablaW_MSE); %riktig å gjøre det sånn?
-% end
 
-
-trainset_class=zeros(1,90);
-%fyller inn sanne verdier
-trainset_class(1,1:Ntrain) = 1;
-trainset_class(1,31:60) = 2;
-trainset_class(1,61:90) = 3;
-
+trainset_class = fill_in_truevalues(C,Ntrain);
 trainset_est=zeros(1,90);
 
 
  for x=1:Ntrain*C 
     for c=1:C
-        %{
-        if all_test_t(c,x) == max(all_test_t(:,x))
-            trainset_class(x)=c;
-        end
-        %}
         if g_all(x,c) == max(g_all(x,:))
             trainset_est(x)= c;
         end
     end
  end
 
-testset_class = zeros(1,60);
-%fyller inn sanne verdier
-testset_class(1,1:20) = 1;
-testset_class(1,21:40) = 2;
-testset_class(1,41:60) = 3;
-
+testset_class = fill_in_truevalues(C,Ntest);
 testset_est = zeros(1,60);
 g_all_test = zeros(C*Ntest,C);
 
 for k=1:C*Ntest
     [gk_test, x] = g_value(k, x_test, W); 
-%     xk = x_test(k,:)';
-%     x = [xk' 1]'; %spørre solveig om denne, hvorfor transposer man to ganger
-%     zk = W*x; 
-           
-    %gk_test = sigmoid(zk); 
     g_all_test(k,:) = gk_test';
     
 end
@@ -113,43 +71,24 @@ for x = 1:C*Ntest
 end
 
 %confusion matrix for train set
-conf_matrix= zeros(C);  
-for t=1:Ntrain*C
-    x=trainset_class(t); 
-    y=trainset_est(t); 
-    conf_matrix(x,y)= conf_matrix(x,y) +1;
-end
+conf_matrix_train = compute_confusion(C, Ntrain, trainset_class, trainset_est);
 disp('Confusion matrix, train set, four features');
-disp(conf_matrix);
+disp(conf_matrix_train);
 
 %confusion matrix for test set
-conf_matrix_test= zeros(C);  
-for t=1:Ntest*C
-    x=testset_class(t); 
-    y=testset_est(t); 
-    conf_matrix_test(x,y)= conf_matrix_test(x,y) +1;
-end
+conf_matrix_test = compute_confusion(C, Ntest, testset_class, testset_est);
 disp('Confusion matrix, test set, four features');
 disp(conf_matrix_test);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Finner error rate
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sum_error_train=0;
-sum_error_test=0;
-for i = 1:C
-    for j = 1:C
-        if j ~= i
-            sum_error_train = sum_error_train +conf_matrix(j,i);
-            sum_error_test = sum_error_test +conf_matrix_test(j,i);
-        end
-    end
-end
-
-error_rate_train = sum_error_train/Ntrain;
-error_rate_test = sum_error_test/Ntest;
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+error_train = compute_error(C,Ntrain,conf_matrix_train);
+disp('Error rate for train set:');
+disp(error_train);
+error_test = compute_error(C,Ntest,conf_matrix_test);
+disp('Error rate for test set:');
+disp(error_test);
 
 
 %Plots 
@@ -165,7 +104,7 @@ xlabel('iterations');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%{
+
 alpha_2 = 0.008; %teste seg fram med denne
 W0_2 = zeros(C,D); 
 w0_2 = zeros(C,1); 
@@ -188,73 +127,29 @@ x_test_2 = [x4_test; x5_test; x6_test]; %60x4
 
 
 %training the classifier
-for m = 1:M
-    nablaW_MSE_2 = 0;
-    MSE_2=0; 
-    
-        for k = 1:Ntrain*C
-            xk = x2_train(k,:)';
-            x = [xk' 1]';
-            zk = W_2*x; %forenkle til zk = Wx?
-           
-            gk = sigmoid(zk); %bruke innebygd sigmoid eller lage egen funksjon for å forenkle koden?
-            g_all_2(k,:) = gk';
-            %kopiert kode, bør endres
-            tk = zeros(C,1);
-            c = floor((k-1)/(Ntrain*C)*C) + 1;
-            tk(c) = 1;
-       
-            MSE2 = (gk-tk).*(gk).*(1-gk);     
-            nablaW_MSE_2 = nablaW_MSE_2 + MSE2*x';
-            MSE_2 = MSE_2 + 0.5*(gk-tk)'*(gk-tk);
-        end
-    %end
-    W_2 = W_2 - alpha_2.*nablaW_MSE_2;
-    MSEs_2(m) = MSE_2; %brukes til å tune alpha til riktig verdi (konvergering)
-    nablaW_MSEs_2(m) = norm(nablaW_MSE_2); %riktig å gjøre det sånn?
-end
+[W_2,MSEs_2, g_all_2]=train_classifier(M, Ntrain, C, x2_train, W_2, alpha_2); 
 
-trainset_class_2=zeros(1,90);
-%fyller inn sanne verdier
-trainset_class_2(1,1:Ntrain) = 1;
-trainset_class_2(1,31:60) = 2;
-trainset_class_2(1,61:90) = 3;
-
+trainset_class_2 = fill_in_truevalues(C,Ntrain);
 trainset_est_2=zeros(1,90);
 
-
- for x=1:Ntrain*C 
+%classifying the inputs
+for x=1:Ntrain*C 
     for c=1:C
-        %{
-        if all_test_t(c,x) == max(all_test_t(:,x))
-            trainset_class(x)=c;
-        end
-        %}
         if g_all_2(x,c) == max(g_all_2(x,:))
             trainset_est_2(x)= c;
         end
     end
- end
+end
 
-testset_class_2 = zeros(1,60);
-%fyller inn sanne verdier
-testset_class_2(1,1:20) = 1;
-testset_class_2(1,21:40) = 2;
-testset_class_2(1,41:60) = 3;
-
+testset_class_2 = fill_in_truevalues(C,Ntest);
 testset_est_2 = zeros(1,60);
 g_all_test_2 = zeros(C*Ntest,C);
 
 for k=1:C*Ntest
-    xk = x_test_2(k,:)';
-    x = [xk' 1]';
-    zk = W_2*x; 
-           
-    gk_test_2 = sigmoid(zk); 
+    gk_test_2= g_value(k, x_test_2, W_2); 
     g_all_test_2(k,:) = gk_test_2';
     
 end
-
 for x = 1:C*Ntest
     for c = 1:C
         if g_all_test_2(x,c) == max(g_all_test_2(x,:))
@@ -264,41 +159,24 @@ for x = 1:C*Ntest
 end
 
 %confusion matrix for train set
-conf_matrix_2= zeros(C);  
-for t=1:Ntrain*C
-    x=trainset_class_2(t); 
-    y=trainset_est_2(t); 
-    conf_matrix_2(x,y)= conf_matrix_2(x,y) +1;
-end
-disp(conf_matrix_2);
+conf_matrix_train_2= compute_confusion(C, Ntrain, trainset_class_2, trainset_est_2); 
+disp('Confusion matrix, train set, four features, 30 last samples');
+disp(conf_matrix_train_2);
 
 %confusion matrix for test set
-conf_matrix_test_2= zeros(C);  
-for t=1:Ntest*C
-    x=testset_class_2(t); 
-    y=testset_est_2(t); 
-    conf_matrix_test_2(x,y)= conf_matrix_test_2(x,y) +1;
-end
+conf_matrix_test_2 = compute_confusion(C, Ntest, testset_class_2, testset_est_2); 
+disp('Confusion matrix, test set, four features, 20 first samples');
 disp(conf_matrix_test_2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Finner error rate
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sum_error_train_2=0;
-sum_error_test_2=0;
-for i = 1:C
-    for j = 1:C
-        if j ~= i
-            sum_error_train_2 = sum_error_train_2 +conf_matrix_2(j,i);
-            sum_error_test_2 = sum_error_test_2 +conf_matrix_test_2(j,i);
-        end
-    end
-end
-
-error_rate_train_2 = sum_error_train_2/Ntrain;
-error_rate_test_2 = sum_error_test_2/Ntest;
-%}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+error_train_2 = compute_error(C,Ntrain,conf_matrix_train_2);
+disp('Error rate for train set:');
+disp(error_train_2);
+error_test_2 = compute_error(C,Ntest,conf_matrix_test_2);
+disp('Error rate for test set:');
+disp(error_test_2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Oppgave 2
@@ -431,11 +309,6 @@ trainset_est_3=zeros(1,90);
 
  for x=1:Ntrain*C 
     for c=1:C
-        %{
-        if all_test_t(c,x) == max(all_test_t(:,x))
-            trainset_class(x)=c;
-        end
-        %}
         if g_all_3(x,c) == max(g_all_3(x,:))
             trainset_est_3(x)= c;
         end
