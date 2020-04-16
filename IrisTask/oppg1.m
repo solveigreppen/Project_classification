@@ -343,6 +343,14 @@ conf_matrix_test_3 = compute_confusion(C, Ntest, testset_class_3, testset_est_3)
 disp('Confusion matrix, test set, three features');
 disp(conf_matrix_test_3);
 
+%error rates
+error_train_3 = compute_error(C,Ntrain,conf_matrix_train_3);
+disp('Error rate for train set:');
+disp(error_train_3);
+error_test_3 = compute_error(C,Ntest,conf_matrix_test_3);
+disp('Error rate for test set:');
+disp(error_test_3);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Oppgave 2b) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -408,14 +416,18 @@ end
 conf_matrix_train_4= compute_confusion(C, Ntrain, trainset_class_4, trainset_est_4); 
 disp('Confusion matrix, train set, two features');
 disp(conf_matrix_train_4);
-error4 = compute_error(C,Ntrain,conf_matrix_train_4);
-disp('Error 4:');
-disp(error4);
-
 
 conf_matrix_test_4 = compute_confusion(C, Ntest, testset_class_4, testset_est_4); 
 disp('Confusion matrix, test set, two features');
 disp(conf_matrix_test_4);
+
+%error rates
+error_train_4 = compute_error(C,Ntrain,conf_matrix_train_4);
+disp('Error rate for train set:');
+disp(error_train_4);
+error_test_4 = compute_error(C,Ntest,conf_matrix_test_4);
+disp('Error rate for test set:');
+disp(error_test_4);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  OPPGAVE 2b - 1 feature
@@ -486,9 +498,15 @@ conf_matrix_test_5 = compute_confusion(C, Ntest, testset_class_5, testset_est_5)
 disp('Confusion matrix, test set, one features');
 disp(conf_matrix_test_5);
 
+%error rates
+error_train_5 = compute_error(C,Ntrain,conf_matrix_train_5);
+disp('Error rate for train set:');
+disp(error_train_5);
+error_test_5 = compute_error(C,Ntest,conf_matrix_test_5);
+disp('Error rate for test set:');
+disp(error_test_5);
+
 %funskjon for å trene classifieren 
-
-
 function [W_0, MSEs_0, g_all_0] = train_classifier(M, N, C, x_vec, W_0, alpha) 
 for m=1:M
     nablaW_MSE=0; 
@@ -542,7 +560,7 @@ for i = 1:C
         end
     end
 end
-error_rate = sum_error/N;
+error_rate = sum_error/(C*N);
 end
 
 %%heihei

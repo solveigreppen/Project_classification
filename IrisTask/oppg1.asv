@@ -167,86 +167,16 @@ disp(conf_matrix_train_2);
 conf_matrix_test_2 = compute_confusion(C, Ntest, testset_class_2, testset_est_2); 
 disp('Confusion matrix, test set, four features, 20 first samples');
 disp(conf_matrix_test_2);
-%{
-
-
-
- for x=1:Ntrain*C 
-    for c=1:C
-        %{
-        if all_test_t(c,x) == max(all_test_t(:,x))
-            trainset_class(x)=c;
-        end
-        %}
-        if g_all_2(x,c) == max(g_all_2(x,:))
-            trainset_est_2(x)= c;
-        end
-    end
- end
-
-testset_class_2 = zeros(1,60);
-%fyller inn sanne verdier
-testset_class_2(1,1:20) = 1;
-testset_class_2(1,21:40) = 2;
-testset_class_2(1,41:60) = 3;
-
-testset_est_2 = zeros(1,60);
-g_all_test_2 = zeros(C*Ntest,C);
-
-for k=1:C*Ntest
-    xk = x_test_2(k,:)';
-    x = [xk' 1]';
-    zk = W_2*x; 
-           
-    gk_test_2 = sigmoid(zk); 
-    g_all_test_2(k,:) = gk_test_2';
-    
-end
-
-for x = 1:C*Ntest
-    for c = 1:C
-        if g_all_test_2(x,c) == max(g_all_test_2(x,:))
-            testset_est_2(x)= c;
-        end
-    end
-end
-
-%confusion matrix for train set
-conf_matrix_2= zeros(C);  
-for t=1:Ntrain*C
-    x=trainset_class_2(t); 
-    y=trainset_est_2(t); 
-    conf_matrix_2(x,y)= conf_matrix_2(x,y) +1;
-end
-disp(conf_matrix_2);
-
-%confusion matrix for test set
-conf_matrix_test_2= zeros(C);  
-for t=1:Ntest*C
-    x=testset_class_2(t); 
-    y=testset_est_2(t); 
-    conf_matrix_test_2(x,y)= conf_matrix_test_2(x,y) +1;
-end
-disp(conf_matrix_test_2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Finner error rate
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sum_error_train_2=0;
-sum_error_test_2=0;
-for i = 1:C
-    for j = 1:C
-        if j ~= i
-            sum_error_train_2 = sum_error_train_2 +conf_matrix_2(j,i);
-            sum_error_test_2 = sum_error_test_2 +conf_matrix_test_2(j,i);
-        end
-    end
-end
-
-error_rate_train_2 = sum_error_train_2/Ntrain;
-error_rate_test_2 = sum_error_test_2/Ntest;
-%}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+error_train_2 = compute_error(C,Ntrain,conf_matrix_train_2);
+disp('Error rate for train set:');
+disp(error_train_2);
+error_test_2 = compute_error(C,Ntest,conf_matrix_test_2);
+disp('Error rate for test set:');
+disp(error_test_2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Oppgave 2
@@ -412,6 +342,9 @@ disp(conf_matrix_train_3);
 conf_matrix_test_3 = compute_confusion(C, Ntest, testset_class_3, testset_est_3); 
 disp('Confusion matrix, test set, three features');
 disp(conf_matrix_test_3);
+
+%error rates
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Oppgave 2b) 
