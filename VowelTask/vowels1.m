@@ -1,6 +1,6 @@
 %husk diag() til diagonal matrise!!
 clear;
-D = 139;
+N = 139;
 Ntrain = 70;
 Ntest = 69;
 Nclass = 12;
@@ -75,17 +75,6 @@ disp('Mean F0 for males:')
     disp(mx);
 %}
 
-%(12*139)x12 matrise.
-vowels = zeros(D*Nclass,Nclass);
-for i = 1:Nclass
-    vowels(1:D,i) = F1s(find(vowel_code==i));
-    vowels(D+1:2*D,i) = F2s(find(vowel_code==i));
-    vowels(2*D+1:3*D,i) = F3s(find(vowel_code==i));
-end
-
-%train_vowels = zeros()
-%test_vowels = vowels(Ntrain+1:D,:);
-
 
 %Oppgave 1 a)
 
@@ -94,87 +83,63 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %finner middelverdien til f1 for hver vokalklasse, lagrer disse i en felles vektor
-means_F1 = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
+means_F1_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
+means_F1_test = zeros(Nclass,1);
 for i=1:12
     y = F1s(find(vowel_code==i));
-    means_F1(i,1) = mean(y(1:Ntrain));
+    means_F1_train(i,1) = mean(y(1:Ntrain));
+    means_F1_test(i,1) = mean(y(Ntrain+1:N));
 end
 
 %middelverdivektor for F2
-means_F2 = zeros(Nclass,1);
+means_F2_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
+means_F2_test = zeros(Nclass,1);
 for i=1:12
     y = F2s(find(vowel_code==i));
-    means_F2(i,1) = mean(y(1:Ntrain));
+    means_F2_train(i,1) = mean(y(1:Ntrain));
+    means_F2_test(i,1) = mean(y(Ntrain+1:N));
 end
 
 %middelverdivektor for F3
-means_F3 = zeros(Nclass,1);
+means_F3_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
+means_F3_test = zeros(Nclass,1);
 for i=1:12
     y = F3s(find(vowel_code==i));
-    means_F3(i,1) = mean(y(1:Ntrain));
+    means_F3_train(i,1) = mean(y(1:Ntrain));
+    means_F3_test(i,1) = mean(y(Ntrain+1:N));
 end
 
 %12x3 matrise som inneholder gjennomsnittsverdien til f1, f2 og f3 for hver
 %klasse
-means = [means_F1 means_F2 means_F3];
+means_train = [means_F1_train means_F2_train means_F3_train];
+means_test = [means_F1_test means_F2_test means_F3_test];
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Lager confusion matrix 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Fs = [F1s F2s F3s];
 
-%{
-cov_matrices = zeros(Nclass*Nfeatures,Nfeatures); %matrise som inneholder alle 12 cov.matrisene
-for c = 1:Nclass %1-12
-    for i = 1:Nfeatures %1-3
-        u_i = means(c,i);
-        for k = 1:Ntrain
-            x_k = 
-        end
-        
-    end
+%lager (12*70)x3 matrise for trainset
+strings = zeros(70*Nclass,3);
+for i = 1:Nclass
+    x_string = Fs((i*N-N)+1:(i-1)*N+Ntrain,:);
+    strings((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
 end
-%}
-%{
-cov_matrices = zeros(Nclass*Nfeatures,Nfeatures); %matrise som inneholder alle 12 cov.matrisene
-for c = 1:Nfeatures
-    cov_matrix = zeros(Nfeatures);
-    for k = 1:Ntrain
-        for i = 1:Nclass
-            u_i = means(i,c);
-            x_k = F1s(k);
-            cov_matrix = cov_matrix + (x_k-u_i)*((x_k-u_i).');
-        end
-    end
-    cov_matrix = cov_matrix./Ntrain;
-    cov_matrices((i-1)*3+1:(i*3),:) = cov_matrix;
+
+% (12*3)x3 matrise bestående av de 12 covarians matrisene
+cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
+for i = 1:Nclass
+    cov_matrices((i-1)*3+1:(i*3),:) = find_cov(strings, 1, Ntrain);
 end
-%}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%{
-means_test = zeros(1,Nclass);
-for i=1:12
-    y = F1s(find(vowel_code==i));
-    means_test(i) = mean(y(Ntrain+1:D));
-end
-
-prob_x_w = zeros(Nfeatures*Nclass,Nfeatures);
-for i = 1:Nclass
-    u_i = means_F1(1,i);
-    x = F1s(1);
-    sigma = cov_matrices((i-1)*Nfeatures+1:i*Nfeatures,:);
-    prob = normpdf(x,u_i,sigma);
-    prob_x_w((i-1)*Nfeatures+1:i*Nfeatures,:) = prob;
-end
-%}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lage confusion matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%kode fra iris
 %{
 g_all_test = zeros(1,Nclass);
 trainset_class = zeros(1,Nclass);
@@ -189,24 +154,7 @@ for x = 1:C*Ntest
 end
 %}
 
-%{
-%cov.matrix for test set 
-cov_matrices_test = zeros(Nfeatures,Nclass*Nfeatures); %matrise som inneholder alle 12 cov.matrisene
- %matrise som inneholder alle 12 cov.matrisene
-for i = 1:Nclass
-    cov_matrix = zeros(Nfeatures);
-    for k = Ntrain+1:D
-        u_i = means_test(i);
-        x_k = F1s(k);
-        cov_matrix = cov_matrix + (x_k-u_i)*((x_k-u_i).');
-    end
-    cov_matrix = cov_matrix./Ntest;
-    cov_matrices_test(:,(i-1)*3+1:(i*3)) = cov_matrix;
-end
-C1 = cov_matrices(1:3,1:3);
-C2 = cov_matrices_test(1:3,1:3);
-%C = confusionmat(C1,C2);
-%}
+%kode fra iris
 %{
 conf_matrix= zeros(Nclass); % trenger en tabell som er 12x12, en med sann klasse, en med plassering. 
 %fill inn confusion matrix: 
@@ -218,3 +166,20 @@ for t=1:length_test
 end
 disp(conf_matrix);
 %}
+
+%{
+mean_ae = find_mean(1,Ntrain,F1s);
+function mean_i = find_mean(vowel_num, N, feature)
+    y = feature(find(vowel_code==vowel_num));
+    mean_i = mean(y(1:N));
+end
+%}
+%{
+function x_string = find_x(Ntot, Ntrain, class_num,vec)
+    x_string = vec((class_num*Ntot-Ntrain)+1:(class_num-1)*Ntot+Ntrain,:);
+end
+%}
+function cov_matrix = find_cov(string, class_num, N)
+    x_string = string((class_num*N-N)+1:class_num*N,:);
+    cov_matrix = cov(x_string);
+end
