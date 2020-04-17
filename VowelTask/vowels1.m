@@ -82,6 +82,11 @@ disp('Mean F0 for males:')
 % Sample mean for hver klasse
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+[mean_trainF150, mean_test150] = find_mean(F150,Nclass,N,Ntrain);
+[mean_trainF250, mean_test250] = find_mean(F250,Nclass,N,Ntrain);
+[mean_trainF350, mean_test350] = find_mean(F350,Nclass,N,Ntrain);
+
+%{
 %finner middelverdien til f1 for hver vokalklasse, lagrer disse i en felles vektor
 means_F1_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
 means_F1_test = zeros(Nclass,1);
@@ -92,7 +97,7 @@ for i=1:12
 end
 
 %middelverdivektor for F2
-means_F2_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
+means_F2_train = zeros(Nclass,1);     
 means_F2_test = zeros(Nclass,1);
 for i=1:12
     y = F2s(find(vowel_code==i));
@@ -101,20 +106,32 @@ for i=1:12
 end
 
 %middelverdivektor for F3
-means_F3_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
+means_F3_train = zeros(Nclass,1);     
 means_F3_test = zeros(Nclass,1);
 for i=1:12
     y = F3s(find(vowel_code==i));
     means_F3_train(i,1) = mean(y(1:Ntrain));
     means_F3_test(i,1) = mean(y(Ntrain+1:N));
 end
+%}
 
 %12x3 matrise som inneholder gjennomsnittsverdien til f1, f2 og f3 for hver
 %klasse
-means_train = [means_F1_train means_F2_train means_F3_train];
-means_test = [means_F1_test means_F2_test means_F3_test];
+means_train = [mean_trainF150 mean_trainF250 mean_trainF350];
+means_test = [mean_test150 mean_test250 mean_test350];
 
+%lager (12*70)x3 matrise for til trening av klassifisereren
+f_50 = make_string(F150,F250,F350,N,Ntrain,Nclass);
+
+%{
 Fs = [F1s F2s F3s];
+
+F_50 = [F150 F250 F350];
+F_50_train = zeros(Ntrain*Nclass,3);
+for i = 1:Nclass
+    x_string = F_50((i*N-N)+1:(i-1)*N+Ntrain,:);
+    F_50_train((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
+end
 
 %lager (12*70)x3 matrise for trainset
 strings = zeros(70*Nclass,3);
@@ -122,17 +139,37 @@ for i = 1:Nclass
     x_string = Fs((i*N-N)+1:(i-1)*N+Ntrain,:);
     strings((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
 end
-
+%}
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
-    cov_matrices((i-1)*3+1:(i*3),:) = find_cov(strings, 1, Ntrain);
+    cov_matrices((i-1)*3+1:(i*3),:) = find_cov(f_50, i, Ntrain);
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+g_all = zeros(3*12,3);
+for i = 1:Nclass
+    g_all((i*3-3)+1:i*3,:) = discriminant2(cov_matrices((i*3-3)+1:i*3,:),means_train(i,:)',f_50(1,:),Prob_w);
+end
+%testing the functions
+%{
+g_840_1 = discriminant(Nfeatures, cov_matrices(1:3,:), means_train(1,:)',strings(840,:));
+g_840_12 = discriminant(Nfeatures, cov_matrices(34:36,:), means_train(12,:)',strings(840,:));
+g_1 = discriminant(Nfeatures,cov_matrices(1:3,1:3),means_train(1,:)',strings(1,:));
+g_1_1 = discriminant2(cov_matrices(1:3,1:3),means_train(1,:)',strings(1,:));
+g_1_12 = discriminant2(cov_matrices(34:36,1:3),means_train(12,:)',strings(1,:));
+g_1_8 = discriminant2(cov_matrices(22:24,1:3),means_train(8,:)',strings(1,:));
+%}
+%{
+gs = zeros (3*12,3);
+for i = 1:Nclass
+    gs((i*3-3)+1:i*3,:) = discriminant2(cov_matrices((i*3-3)+1:i*3,:),means_train(i,:)',strings(1,:))*Prob_w;
+end
+%}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -182,4 +219,33 @@ end
 function cov_matrix = find_cov(string, class_num, N)
     x_string = string((class_num*N-N)+1:class_num*N,:);
     cov_matrix = cov(x_string);
+end
+
+function g_i = discriminant(dim,cov_matrix, mu,x)
+    g_i = -(dim/2)*log(2*pi)-0.5*log(abs(cov_matrix))-0.5*(x-mu)'*cov_matrix^(-1)*(x-mu);
+end
+
+function g_i = discriminant2(cov_matrix, mu, x, prior)
+    g_i = normpdf(x,mu,cov_matrix)*prior;
+end
+
+
+function [mean_train, mean_test] = find_mean(string,Nclass,Ntot,Ntrain)
+    mean_train = zeros(Nclass,1);
+    mean_test = zeros(Nclass,1);
+
+    for i = 1:Nclass    
+        y = string((i*Ntot-Ntot)+1:i*Ntot);
+        mean_train(i,1) = mean(y(1:Ntrain));
+        mean_test(i,1) = mean(y(Ntrain+1:Ntot));
+    end
+end
+
+function matrix = make_string(string1,string2,string3,Ntot,Ntrain,Nclass)
+    matrix_tot = [string1 string2 string3];
+    matrix = zeros(Ntrain*Nclass,3);
+    for i = 1:Nclass
+        x_string = matrix_tot((i*Ntot-Ntot)+1:(i-1)*Ntot+Ntrain,:);
+        matrix((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
+    end
 end
