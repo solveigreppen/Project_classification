@@ -259,3 +259,25 @@ function matrix = make_string(string1,string2,string3,Ntot,Ntrain,Nclass)
         matrix((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
     end
 end
+
+function conf_mat = compute_confusion(N, C, set_class, set_est) %trengs til oppg 1b
+conf_mat=zeros(C);
+    for t=1:N*C
+        x=set_class(t); 
+        y=set_est(t); 
+        conf_mat(x,y)=conf_mat(x,y)+1; 
+    end
+end
+
+function error = error_rate(C, N, conf_mat) %trengs til opp 1b)
+sum_error=0;
+for i = 1:C
+    for j = 1:C
+        if j ~= i           
+            sum_error = sum_error +conf_mat(j,i);
+        end
+    end
+end
+error = sum_error/(C*N);
+end
+
