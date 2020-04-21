@@ -102,9 +102,21 @@ for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
     cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntest);
 end
+cov_mat1 = zeros(36,3);
+for i = 1:12
+    cov_mat1((i-1)*3+1:(i*3),:) = find_cov(Fs,i,Ntest);
+end
+%lager covariance matrix
+%{
+function cov_matrix = find_cov(string, class_num, N)
+    x_string = string((class_num*N-N)+1:class_num*N,:);
+    cov_matrix = cov(x_string);
+end
+%}
 
-%cov_diag_train = cov_matrices;
-%cov_diag_test = diag(cov_mat_test);
+Ftot = [F1s F2s F3s];
+test_vals = make_test_matrix(Ftot,N,Ntest,Nclass,Nfeatures);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
@@ -121,12 +133,10 @@ for i = 1:Ntrain*Nclass
     end
 end
 
-
-
 g_all_test = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
-        x = Fs(i,:);
+        x = test_vals(i,:);
         mu = means_test(c,:);
         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
         g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
@@ -166,11 +176,44 @@ error_test = compute_error(Nclass,Ntest,conf_mat_test);
 disp(error);
 disp(error_test);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1c) diagonal covariance matrices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+cov_diags = zeros(Nclass*Nfeatures,Nfeatures);
+cov_diags_test = zeros(Nclass*Nfeatures,Nfeatures);
+for i = 1:Nclass
+    cov_diag = find_cov(Fs, i, Ntrain);
+    cov_diags((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag, Nfeatures, Nfeatures);
+    cov_diag_test = find_cov(test_vals, i, Ntest);
+    cov_diags_test((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag_test, Nfeatures, Nfeatures);
+end 
+
+g_all_diag = zeros(Ntest*Nclass, Nclass);
+for i = 1:Ntest*Nclass
+    for c = 1:Nclass
+        x = test_vals(i,:);
+        mu = means_test(c,:);
+        cov_mat = cov_diags_test((c-1)*Nfeatures+1:c*Nfeatures,:);
+        g_all_diag(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+    end
+end
+
+%tester klassifisereren
+true_val_diag = fill_in_truevalues(Nclass,Ntest);
+testset_diag = test_classifier(Nclass, Ntest,g_all_diag,true_val_diag);
+
+%lager confusion matrix
+conf_mat_diag = compute_confusion(Nclass,Ntest, true_val_diag, testset_diag);
+disp(conf_mat_diag);
+%finner error rate
+error_diag = compute_error(Nclass,Ntest,conf_mat_diag);
+disp(error_diag);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Funksjoner
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%lager covariance matrix
 function cov_matrix = find_cov(string, class_num, N)
     x_string = string((class_num*N-N)+1:class_num*N,:);
     cov_matrix = cov(x_string);
@@ -203,6 +246,14 @@ function matrix = make_string(string1,string2,string3,Ntot,Ntrain,Nclass)
     for i = 1:Nclass
         x_string = matrix_tot((i*Ntot-Ntot)+1:(i-1)*Ntot+Ntrain,:);
         matrix((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
+    end
+end
+
+function test_inputs = make_test_matrix(inputs,N,Ntest,C,Nfeatures)
+    test_inputs = zeros(C*Ntest,Nfeatures);
+    for c=1:C
+        x_string = inputs((c-1)*N+71:c*N,:);
+        test_inputs((c-1)*Ntest+1:c*Ntest,:) = x_string;
     end
 end
 
@@ -264,3 +315,13 @@ for i = 1:N*C
 end
 end
 %}
+function cov_diag = make_diag_cov(cov_matrix,width,length)
+    for i = 1:width
+        for j = 1:length
+            if j ~= i
+                cov_matrix(i,j) = 0;
+            end
+        end
+    end
+    cov_diag = cov_matrix;
+end
