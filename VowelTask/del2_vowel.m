@@ -200,10 +200,14 @@ for i = 1:Ntrain*Nclass
     for c = 1:Nclass
         x = Fs(i,:);
         mu = means_train(c,:);
-        cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-        diag_cov = diag(cov_mat);
-        disp(diag_cov);
-        %gmm(i,c)= discriminant3 (diag_cov, mu, x, Nfeatures, Prob_w, 2);
+        cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:); 
+        %diag_cov = diag(cov_mat); %blir bare 1x3, er feil å bruke bare diag, må gjøre mer. 
+        %disp(diag_cov);
+        %The Matlab function GMMi = fitgmdist(trainvi,M); will put M
+        %mixtures into GMMi using the training vectors train vi from class
+        %wi, benytte
+        gmm(i,c)= discriminant3 (cov_mat, mu, x, Nfeatures, Prob_w, 2);
+        %%brukes når diag_cov har riktig dimensjon.
         %g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w); % denne må vi endre til 3.5
         
     end
@@ -214,7 +218,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Oppgave 2b)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%Find the confusion matrix and error rate: 
+gmm = zeros(Ntrain*Nclass) 
 % g_all = zeros(Ntrain*Nclass,Nclass);
 % for i = 1:Ntrain*Nclass
 %     for c = 1:Nclass
@@ -274,6 +279,7 @@ function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M)
     for k=1:M
     g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior);
     end
+    
 end
 
 %funksjon 3.4 fra kompendiet

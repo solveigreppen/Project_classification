@@ -122,6 +122,7 @@ for i = 1:Ntrain*Nclass
     end
 end
 
+
 g_all_test = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
@@ -200,8 +201,10 @@ for i = 1:Ntrain*Nclass
         x = Fs(i,:);
         mu = means_train(c,:);
         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-        diag_cov = diag(cov_mat);
-        gmm(i,c)= discriminant3 (diag_cov, mu, x, Nfeatures, prior, 2);
+        diag_cov = diag(cov_mat); %blir bare 1x3, er feil å bruke bare diag, må gjøre mer. 
+        disp(diag_cov);
+        %gmm(i,c)= discriminant3 (diag_cov, mu, x, Nfeatures, Prob_w, 2);
+        %%brukes når diag_cov har riktig dimensjon.
         %g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w); % denne må vi endre til 3.5
         
     end
@@ -212,47 +215,49 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Oppgave 2b)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Find the confusion matrix and error rate: 
+g_all
 
-g_all = zeros(Ntrain*Nclass,Nclass);
-for i = 1:Ntrain*Nclass
-    for c = 1:Nclass
-        x = Fs(i,:);
-        mu = means_train(c,:);
-        cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-        g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
-    end
-end
-
-g_all_test = zeros(Ntest*Nclass, Nclass);
-for i = 1:Ntest*Nclass
-    for c = 1:Nclass
-        x = Fs(i,:);
-        mu = means_test(c,:);
-        cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-        g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
-    end
-end
-%trener klassifisereren
-true_val = fill_in_truevalues(Nclass,Ntrain);
-trainset = zeros(840,1);
-for x = 1:Nclass*Ntrain
-    for c = 1:Nclass
-        if g_all(x,c) == max(g_all(x,:))
-            trainset(x,1)= c;
-        end
-    end
-end
-
-%tester klassifisereren
-true_val_test = fill_in_truevalues(Nclass,Ntest);
-testset = zeros(Ntest*Nclass,1);
-for x = 1:Nclass*Ntest
-    for c = 1:Nclass
-        if g_all_test(x,c) == max(g_all_test(x,:))
-            testset(x,1)= c;
-        end
-    end
-end
+% g_all = zeros(Ntrain*Nclass,Nclass);
+% for i = 1:Ntrain*Nclass
+%     for c = 1:Nclass
+%         x = Fs(i,:);
+%         mu = means_train(c,:);
+%         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
+%         g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+%     end
+% end
+% 
+% g_all_test = zeros(Ntest*Nclass, Nclass);
+% for i = 1:Ntest*Nclass
+%     for c = 1:Nclass
+%         x = Fs(i,:);
+%         mu = means_test(c,:);
+%         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
+%         g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+%     end
+% end
+% %trener klassifisereren
+% true_val = fill_in_truevalues(Nclass,Ntrain);
+% trainset = zeros(840,1);
+% for x = 1:Nclass*Ntrain
+%     for c = 1:Nclass
+%         if g_all(x,c) == max(g_all(x,:))
+%             trainset(x,1)= c;
+%         end
+%     end
+% end
+% 
+% %tester klassifisereren
+% true_val_test = fill_in_truevalues(Nclass,Ntest);
+% testset = zeros(Ntest*Nclass,1);
+% for x = 1:Nclass*Ntest
+%     for c = 1:Nclass
+%         if g_all_test(x,c) == max(g_all_test(x,:))
+%             testset(x,1)= c;
+%         end
+%     end
+% end
 
 
 
@@ -268,9 +273,10 @@ function cov_matrix = find_cov(string, class_num, N)
 end
 %Forsøk på 3.5 fra kompendiet. 
 function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M) 
-g_i2 = 0; 
-for k=1:M
+    g_i2 = 0; 
+    for k=1:M
     g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior);
+    end
 end
 
 %funksjon 3.4 fra kompendiet
@@ -281,7 +287,6 @@ function g_i = discriminant2(cov_matrix, mu, x,Nfeatures, prior)
 end
 
 
-end
 %Nclassx1 matrise bestående av middelverdien til en feature for hver klasse
 function [mean_train, mean_test] = find_mean(string,Nclass,Ntot,Ntrain)
     mean_train = zeros(Nclass,1);
