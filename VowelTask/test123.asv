@@ -97,10 +97,8 @@ Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
 
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
-cov_mat_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
-    cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntest);
 end
 
 
@@ -123,9 +121,9 @@ g_all_test = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
         x = Fs(i,:);
-        mu = means_test(c,:);
+        mu = means_train(c,:);
         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-        g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+        g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
     end
 end
 %trener klassifisereren
@@ -153,7 +151,7 @@ end
 % Lage confusion matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-conf_mat_train = compute_confusion(Nclass,Ntrain, true_val, trainset);
+conf_matrix = compute_confusion(Nclass,Ntrain, true_val, trainset);
 %{
 %fill inn confusion matrix: 
 conf_matrix= zeros(Nclass); % trenger en tabell som er 12x12, en med sann klasse, en med plassering. 
@@ -164,15 +162,10 @@ for t=1:Nclass*Ntrain
     conf_matrix(x,y)= conf_matrix(x,y) +1;
 end
 %}
-disp(conf_mat_train);
+disp(conf_matrix);
 
-conf_mat_test = compute_confusion(Nclass,Ntest, true_val_test, testset);
-disp(conf_mat_test);
 %finner error rate
-error = compute_error(Nclass,Ntrain,conf_mat_train);
-error_test = compute_error(Nclass,Ntest,conf_mat_test);
-disp(error);
-disp(error_test);
+error = compute_error(Nclass,Ntrain,conf_matrix);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Funksjoner
