@@ -86,6 +86,7 @@ disp('Mean F0 for males:')
 [mean_trainF2, mean_testF2] = find_mean(F2s,Nclass,N,Ntrain);
 [mean_trainF3, mean_testF3] = find_mean(F3s,Nclass,N,Ntrain);
 
+<<<<<<< HEAD:VowelTask/vowels1.asv
 %{
 %finner middelverdien til f1 for hver vokalklasse, lagrer disse i en felles vektor
 =======
@@ -123,6 +124,8 @@ for i=1:12
     means_F3_test(i,1) = mean(y(Ntrain+1:N));
 end
 %}
+=======
+>>>>>>> master:VowelTask/del1_vowel.m
 
 %12x3 matrise som inneholder gjennomsnittsverdien til f1, f2 og f3 for hver
 %klasse
@@ -132,6 +135,7 @@ means_test = [mean_testF1 mean_testF2 mean_testF3];
 %lager (12*70)x3 matrise for til trening av klassifisereren
 Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
 
+<<<<<<< HEAD:VowelTask/vowels1.asv
 %{
 Fs = [F1s F2s F3s];
 
@@ -150,6 +154,9 @@ for i = 1:Nclass
 end
 %}
 % (12*3)x3 matrise bestï¿½ende av de 12 covarians matrisene
+=======
+% (12*3)x3 matrise bestående av de 12 covarians matrisene
+>>>>>>> master:VowelTask/del1_vowel.m
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
@@ -159,13 +166,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-
-g_all = zeros(3*12,3);
-for i = 1:Nclass
-    g_all((i*3-3)+1:i*3,:) = discriminant2(cov_matrices((i*3-3)+1:i*3,:),means_train(i,:)',f_50(1,:),Prob_w);
-end
-%}
 
 % (70*12)x12 matrise som inneholder alle discriminant functions
 g_all = zeros(Ntrain*Nclass,Nclass);
@@ -193,7 +193,7 @@ end
 % Lage confusion matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-fill inn confusion matrix: 
+%fill inn confusion matrix: 
 conf_matrix= zeros(Nclass); % trenger en tabell som er 12x12, en med sann klasse, en med plassering. 
 %length_test=length(testset_class); 
 for t=1:Nclass*Ntrain
@@ -202,6 +202,9 @@ for t=1:Nclass*Ntrain
     conf_matrix(x,y)= conf_matrix(x,y) +1;
 end
 disp(conf_matrix);
+
+%finner error rate
+error = compute_error(Nclass,Ntrain,conf_matrix);
 
 
 %{
