@@ -10,9 +10,9 @@ nfiles = 1668;
 Prob_w = 1/Nclass;
 % character 1:     m=man, w=woman, b=boy, g=girl 
 % characters 2-3:  talker number 
-% characters 4-5:  vowel (ae=”had”, ah=”hod”, aw=”hawed”, eh=”head”,  
-%    er=”heard”, ei=”haid”, ih=”hid”, iy=”heed”, oa=/o/ as in “boat”,  
-%    oo=”hood”, uh=”hud”, uw=”who’d”) 
+% characters 4-5:  vowel (ae=ï¿½hadï¿½, ah=ï¿½hodï¿½, aw=ï¿½hawedï¿½, eh=ï¿½headï¿½,  
+%    er=ï¿½heardï¿½, ei=ï¿½haidï¿½, ih=ï¿½hidï¿½, iy=ï¿½heedï¿½, oa=/o/ as in ï¿½boatï¿½,  
+%    oo=ï¿½hoodï¿½, uh=ï¿½hudï¿½, uw=ï¿½whoï¿½dï¿½) 
 
 
 vowel = str2mat('ae','ah','aw','eh','er','ei','ih','iy','oa','oo','uh','uw'); 
@@ -23,8 +23,8 @@ talker_number = zeros(1,nfiles);
 
 files=char(files); % convert cell array to character matrix [nfiles,nchar]=size(filenames); 
 for i=1:nfiles  
-    vowel_code(i) = strmatch(files(i,4:5),vowel);  
-    talker_group_code(i) = strmatch(files(i,1),talker_group);  
+    vowel_code(i) = strmatch(files(i,4:5),vowel);  %legger inn en nummerkode for hver av vowelene i en fil
+    talker_group_code(i) = strmatch(files(i,1),talker_group);  %legger inn en nummerkode avhengig av hvem som prater
     talker_number(i) = str2num(files(i,2:3)); 
 end; 
 
@@ -34,7 +34,7 @@ end;
 x = F0s(find(talker_group_code==1));   
 figure(1);   
 subplot(2,2,1);   
-hist(x,20);  % use 20 “bins”   
+hist(x,20);  % use 20 ï¿½binsï¿½   
 set(gca,'XLim',[50 500]);  % set x-axis limits between 50 & 500 Hz   
 %xlim([50 500]);
 title('adult males')
@@ -86,6 +86,46 @@ disp('Mean F0 for males:')
 [mean_trainF2, mean_testF2] = find_mean(F2s,Nclass,N,Ntrain);
 [mean_trainF3, mean_testF3] = find_mean(F3s,Nclass,N,Ntrain);
 
+<<<<<<< HEAD:VowelTask/vowels1.asv
+%{
+%finner middelverdien til f1 for hver vokalklasse, lagrer disse i en felles vektor
+=======
+%finner middelverdien til f1 for hver vokalklasse, lagrer disse i en felles
+%vektor, f1 er feature 1 osv til feature 3
+>>>>>>> Stashed changes
+means_F1_train = zeros(Nclass,1);     %kan gjï¿½re tilsvarende for F1, F2, F3
+means_F1_test = zeros(Nclass,1);
+for i=1:12
+    y = F1s(find(vowel_code==i));
+    means_F1_train(i,1) = mean(y(1:Ntrain));
+    means_F1_test(i,1) = mean(y(Ntrain+1:N));
+end
+
+<<<<<<< Updated upstream
+%middelverdivektor for F2
+means_F2_train = zeros(Nclass,1);     
+=======
+%middelverdivektor for F2 - kan kanskje lage funksjon
+means_F2_train = zeros(Nclass,1);     %kan gjï¿½re tilsvarende for F1, F2, F3
+>>>>>>> Stashed changes
+means_F2_test = zeros(Nclass,1);
+for i=1:12
+    y = F2s(find(vowel_code==i));
+    means_F2_train(i,1) = mean(y(1:Ntrain));
+    means_F2_test(i,1) = mean(y(Ntrain+1:N));
+end
+
+%middelverdivektor for F3
+means_F3_train = zeros(Nclass,1);     
+means_F3_test = zeros(Nclass,1);
+for i=1:12
+    y = F3s(find(vowel_code==i));
+    means_F3_train(i,1) = mean(y(1:Ntrain));
+    means_F3_test(i,1) = mean(y(Ntrain+1:N));
+end
+%}
+=======
+>>>>>>> master:VowelTask/del1_vowel.m
 
 %12x3 matrise som inneholder gjennomsnittsverdien til f1, f2 og f3 for hver
 %klasse
@@ -95,7 +135,28 @@ means_test = [mean_testF1 mean_testF2 mean_testF3];
 %lager (12*70)x3 matrise for til trening av klassifisereren
 Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
 
+<<<<<<< HEAD:VowelTask/vowels1.asv
+%{
+Fs = [F1s F2s F3s];
+
+F_50 = [F150 F250 F350];
+F_50_train = zeros(Ntrain*Nclass,3);
+for i = 1:Nclass
+    x_string = F_50((i*N-N)+1:(i-1)*N+Ntrain,:);
+    F_50_train((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
+end
+
+%lager (12*70)x3 matrise for trainset
+strings = zeros(70*Nclass,3);
+for i = 1:Nclass
+    x_string = Fs((i*N-N)+1:(i-1)*N+Ntrain,:);
+    strings((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
+end
+%}
+% (12*3)x3 matrise bestï¿½ende av de 12 covarians matrisene
+=======
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
+>>>>>>> master:VowelTask/del1_vowel.m
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
@@ -174,7 +235,7 @@ function g_i = discriminant2(cov_matrix, mu, x,Nfeatures, prior)
     expo = exp(-0.5*(x-mu)*cov_matrix^(-1)*(x-mu)');
     g_i = frac*expo*prior;
 end
-%prøve gmdistribution?
+%prï¿½ve gmdistribution?
 
 function [mean_train, mean_test] = find_mean(string,Nclass,Ntot,Ntrain)
     mean_train = zeros(Nclass,1);

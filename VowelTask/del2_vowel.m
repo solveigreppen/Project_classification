@@ -1,3 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Kopi for å lage kode til oppg 2!%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %husk diag() til diagonal matrise!!
 clear;
 N = 139;
@@ -14,7 +17,7 @@ Prob_w = 1/Nclass;
 %    er=”heard”, ei=”haid”, ih=”hid”, iy=”heed”, oa=/o/ as in “boat”,  
 %    oo=”hood”, uh=”hud”, uw=”who’d”) 
 
-
+%databehandling
 vowel = str2mat('ae','ah','aw','eh','er','ei','ih','iy','oa','oo','uh','uw'); 
 talker_group = char('m','w','b','g');  
 
@@ -23,8 +26,8 @@ talker_number = zeros(1,nfiles);
 
 files=char(files); % convert cell array to character matrix [nfiles,nchar]=size(filenames); 
 for i=1:nfiles  
-    vowel_code(i) = strmatch(files(i,4:5),vowel);  %legger inn en nummerkode for hver av vowelene i en fil
-    talker_group_code(i) = strmatch(files(i,1),talker_group);  %legger inn en nummerkode avhengig av hvem som prater
+    vowel_code(i) = strmatch(files(i,4:5),vowel);  
+    talker_group_code(i) = strmatch(files(i,1),talker_group);  
     talker_number(i) = str2num(files(i,2:3)); 
 end; 
 
@@ -82,55 +85,10 @@ disp('Mean F0 for males:')
 % Sample mean for hver klasse
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-[mean_trainF150, mean_test150] = find_mean(F150,Nclass,N,Ntrain);
-[mean_trainF250, mean_test250] = find_mean(F250,Nclass,N,Ntrain);
-[mean_trainF350, mean_test350] = find_mean(F350,Nclass,N,Ntrain);
-
-%{
-%finner middelverdien til f1 for hver vokalklasse, lagrer disse i en felles vektor
-=======
-%finner middelverdien til f1 for hver vokalklasse, lagrer disse i en felles
-%vektor, f1 er feature 1 osv til feature 3
->>>>>>> Stashed changes
-means_F1_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
-means_F1_test = zeros(Nclass,1);
-for i=1:12
-    y = F1s(find(vowel_code==i));
-    means_F1_train(i,1) = mean(y(1:Ntrain));
-    means_F1_test(i,1) = mean(y(Ntrain+1:N));
-end
-
-<<<<<<< Updated upstream
-%middelverdivektor for F2
-means_F2_train = zeros(Nclass,1);     
-=======
-%middelverdivektor for F2 - kan kanskje lage funksjon
-means_F2_train = zeros(Nclass,1);     %kan gjøre tilsvarende for F1, F2, F3
->>>>>>> Stashed changes
-means_F2_test = zeros(Nclass,1);
-for i=1:12
-    y = F2s(find(vowel_code==i));
-    means_F2_train(i,1) = mean(y(1:Ntrain));
-    means_F2_test(i,1) = mean(y(Ntrain+1:N));
-end
-
-%middelverdivektor for F3
-means_F3_train = zeros(Nclass,1);     
-means_F3_test = zeros(Nclass,1);
-for i=1:12
-    y = F3s(find(vowel_code==i));
-    means_F3_train(i,1) = mean(y(1:Ntrain));
-    means_F3_test(i,1) = mean(y(Ntrain+1:N));
-end
-%}
-=======
 [mean_trainF1, mean_testF1] = find_mean(F1s,Nclass,N,Ntrain);
 [mean_trainF2, mean_testF2] = find_mean(F2s,Nclass,N,Ntrain);
 [mean_trainF3, mean_testF3] = find_mean(F3s,Nclass,N,Ntrain);
 
->>>>>>> master
 
 %12x3 matrise som inneholder gjennomsnittsverdien til f1, f2 og f3 for hver
 %klasse
@@ -142,8 +100,10 @@ Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
 
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
+cov_mat_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
+    cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntest);
 end
 
 
@@ -162,6 +122,16 @@ for i = 1:Ntrain*Nclass
     end
 end
 
+
+g_all_test = zeros(Ntest*Nclass, Nclass);
+for i = 1:Ntest*Nclass
+    for c = 1:Nclass
+        x = Fs(i,:);
+        mu = means_test(c,:);
+        cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
+        g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+    end
+end
 %trener klassifisereren
 true_val = fill_in_truevalues(Nclass,Ntrain);
 trainset = zeros(840,1);
@@ -173,10 +143,22 @@ for x = 1:Nclass*Ntrain
     end
 end
 
+%tester klassifisereren
+true_val_test = fill_in_truevalues(Nclass,Ntest);
+testset = zeros(Ntest*Nclass,1);
+for x = 1:Nclass*Ntest
+    for c = 1:Nclass
+        if g_all_test(x,c) == max(g_all_test(x,:))
+            testset(x,1)= c;
+        end
+    end
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lage confusion matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+conf_mat_train = compute_confusion(Nclass,Ntrain, true_val, trainset);
+%{
 %fill inn confusion matrix: 
 conf_matrix= zeros(Nclass); % trenger en tabell som er 12x12, en med sann klasse, en med plassering. 
 %length_test=length(testset_class); 
@@ -185,42 +167,124 @@ for t=1:Nclass*Ntrain
     y=trainset(t); 
     conf_matrix(x,y)= conf_matrix(x,y) +1;
 end
-disp(conf_matrix);
+%}
+disp(conf_mat_train);
 
+conf_mat_test = compute_confusion(Nclass,Ntest, true_val_test, testset);
+disp(conf_mat_test);
 %finner error rate
-error = compute_error(Nclass,Ntrain,conf_matrix);
+error = compute_error(Nclass,Ntrain,conf_mat_train);
+error_test = compute_error(Nclass,Ntest,conf_mat_test);
+disp(error);
+disp(error_test);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Oppgave 2!! 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Hva må vi gjøre: 
+%- a) Finn GMM modell med diagonal covariance matrix for både 2 og 3 mixtures
+%for hver klasse. 
+%-  b) Modifiser klassifisereren i 1b) til å håndtere mixture av gaussians
+% -c)  Finn confusion matrix og error rate for the GMM classifier ved bruk av
+% M = 2 og M=3 Gaussians per klasse. 
+% -d)  sammenlign performance/ytelsen til alle de fire modellene 1b) 1c) og
+% 2c). For hvilke klasse er differansen størst? 
 
-%{
-mean_ae = find_mean(1,Ntrain,F1s);
-function mean_i = find_mean(vowel_num, N, feature)
-    y = feature(find(vowel_code==vowel_num));
-    mean_i = mean(y(1:N));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Oppgave 2a)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%lage diagonal cov mat 
+
+gmm = zeros(Ntrain*Nclass,Nclass);
+for i = 1:Ntrain*Nclass
+    for c = 1:Nclass
+        x = Fs(i,:);
+        mu = means_train(c,:);
+        cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
+        diag_cov = diag(cov_mat);
+        disp(diag_cov);
+        %gmm(i,c)= discriminant3 (diag_cov, mu, x, Nfeatures, Prob_w, 2);
+        %g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w); % denne må vi endre til 3.5
+        
+    end
 end
-%}
-%{
-function x_string = find_x(Ntot, Ntrain, class_num,vec)
-    x_string = vec((class_num*Ntot-Ntrain)+1:(class_num-1)*Ntot+Ntrain,:);
-end
-%}
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Oppgave 2b)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% g_all = zeros(Ntrain*Nclass,Nclass);
+% for i = 1:Ntrain*Nclass
+%     for c = 1:Nclass
+%         x = Fs(i,:);
+%         mu = means_train(c,:);
+%         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
+%         g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+%     end
+% end
+% 
+% g_all_test = zeros(Ntest*Nclass, Nclass);
+% for i = 1:Ntest*Nclass
+%     for c = 1:Nclass
+%         x = Fs(i,:);
+%         mu = means_test(c,:);
+%         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
+%         g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+%     end
+% end
+% %trener klassifisereren
+% true_val = fill_in_truevalues(Nclass,Ntrain);
+% trainset = zeros(840,1);
+% for x = 1:Nclass*Ntrain
+%     for c = 1:Nclass
+%         if g_all(x,c) == max(g_all(x,:))
+%             trainset(x,1)= c;
+%         end
+%     end
+% end
+% 
+% %tester klassifisereren
+% true_val_test = fill_in_truevalues(Nclass,Ntest);
+% testset = zeros(Ntest*Nclass,1);
+% for x = 1:Nclass*Ntest
+%     for c = 1:Nclass
+%         if g_all_test(x,c) == max(g_all_test(x,:))
+%             testset(x,1)= c;
+%         end
+%     end
+% end
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Funksjoner
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%lager covariance matrix
 function cov_matrix = find_cov(string, class_num, N)
     x_string = string((class_num*N-N)+1:class_num*N,:);
     cov_matrix = cov(x_string);
 end
-%{
-function g_i = discriminant(dim,cov_matrix, mu,x)
-    g_i = -(dim/2)*log(2*pi)-0.5*log(abs(cov_matrix))-0.5*(x-mu)'*cov_matrix^(-1)*(x-mu);
+%Forsøk på 3.5 fra kompendiet. 
+function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M) 
+    g_i2 = 0; 
+    for k=1:M
+    g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior);
+    end
 end
-%}
 
+%funksjon 3.4 fra kompendiet
 function g_i = discriminant2(cov_matrix, mu, x,Nfeatures, prior)
     frac = (sqrt(2*pi)^(Nfeatures)*det(cov_matrix))^(-1);
     expo = exp(-0.5*(x-mu)*cov_matrix^(-1)*(x-mu)');
     g_i = frac*expo*prior;
 end
-%prøve gmdistribution?
 
+
+%Nclassx1 matrise bestående av middelverdien til en feature for hver klasse
 function [mean_train, mean_test] = find_mean(string,Nclass,Ntot,Ntrain)
     mean_train = zeros(Nclass,1);
     mean_test = zeros(Nclass,1);
@@ -232,6 +296,8 @@ function [mean_train, mean_test] = find_mean(string,Nclass,Ntot,Ntrain)
     end
 end
 
+%matrise bestående av inputs fra 3 ulike features for å gjøre behandlingen
+%av data lettere
 function matrix = make_string(string1,string2,string3,Ntot,Ntrain,Nclass)
     matrix_tot = [string1 string2 string3];
     matrix = zeros(Ntrain*Nclass,3);
@@ -241,18 +307,7 @@ function matrix = make_string(string1,string2,string3,Ntot,Ntrain,Nclass)
     end
 end
 
-<<<<<<< HEAD
-function conf_mat = compute_confusion(N, C, set_class, set_est) %trengs til oppg 1b
-conf_mat=zeros(C);
-    for t=1:N*C
-        x=set_class(t); 
-        y=set_est(t); 
-        conf_mat(x,y)=conf_mat(x,y)+1; 
-    end
-end
-
-function error = error_rate(C, N, conf_mat) %trengs til opp 1b)
-=======
+%fyller inn sanne verdier til bruk til confusion matrix
 function truevalues = fill_in_truevalues(C,N)
 truevalues=zeros(C*N,1);
     for c = 1:C
@@ -262,8 +317,18 @@ truevalues=zeros(C*N,1);
     end
 end
 
+%lager confusion matrix
+function conf_mat = compute_confusion(C,N, set_class, set_est)  
+    conf_mat=zeros(C);
+    for t=1:N*C
+        x=set_class(t); 
+        y=set_est(t); 
+        conf_mat(x,y)=conf_mat(x,y)+1; 
+    end
+end
+
+%finner error rate 
 function error_rate = compute_error(C,N,conf_mat)
->>>>>>> master
 sum_error=0;
 for i = 1:C
     for j = 1:C
@@ -272,12 +337,5 @@ for i = 1:C
         end
     end
 end
-<<<<<<< HEAD
-error = sum_error/(C*N);
-end
-
-=======
 error_rate = sum_error/(C*N);
 end
-%hei
->>>>>>> master
