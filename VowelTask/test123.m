@@ -103,6 +103,8 @@ for i = 1:Nclass
     cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntest);
 end
 
+%cov_diag_train = cov_matrices;
+%cov_diag_test = diag(cov_mat_test);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
