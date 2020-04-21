@@ -216,3 +216,4 @@ for i = 1:C
 end
 error_rate = sum_error/(C*N);
 end
+%hei
