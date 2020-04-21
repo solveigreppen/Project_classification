@@ -145,36 +145,23 @@ disp(conf_matrix);
 %finner error rate
 error = compute_error(Nclass,Ntrain,conf_matrix);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Funksjoner
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%{
-mean_ae = find_mean(1,Ntrain,F1s);
-function mean_i = find_mean(vowel_num, N, feature)
-    y = feature(find(vowel_code==vowel_num));
-    mean_i = mean(y(1:N));
-end
-%}
-%{
-function x_string = find_x(Ntot, Ntrain, class_num,vec)
-    x_string = vec((class_num*Ntot-Ntrain)+1:(class_num-1)*Ntot+Ntrain,:);
-end
-%}
-
+%lager covariance matrix
 function cov_matrix = find_cov(string, class_num, N)
     x_string = string((class_num*N-N)+1:class_num*N,:);
     cov_matrix = cov(x_string);
 end
-%{
-function g_i = discriminant(dim,cov_matrix, mu,x)
-    g_i = -(dim/2)*log(2*pi)-0.5*log(abs(cov_matrix))-0.5*(x-mu)'*cov_matrix^(-1)*(x-mu);
-end
-%}
 
+%funksjon 3.4 fra kompendiet
 function g_i = discriminant2(cov_matrix, mu, x,Nfeatures, prior)
     frac = (sqrt(2*pi)^(Nfeatures)*det(cov_matrix))^(-1);
     expo = exp(-0.5*(x-mu)*cov_matrix^(-1)*(x-mu)');
     g_i = frac*expo*prior;
 end
-%prøve gmdistribution?
+
 
 function [mean_train, mean_test] = find_mean(string,Nclass,Ntot,Ntrain)
     mean_train = zeros(Nclass,1);
