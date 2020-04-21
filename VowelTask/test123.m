@@ -119,6 +119,8 @@ for i = 1:Ntrain*Nclass
     end
 end
 
+
+
 g_all_test = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
@@ -128,27 +130,15 @@ for i = 1:Ntest*Nclass
         g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
     end
 end
+
 %trener klassifisereren
 true_val = fill_in_truevalues(Nclass,Ntrain);
-trainset = zeros(840,1);
-for x = 1:Nclass*Ntrain
-    for c = 1:Nclass
-        if g_all(x,c) == max(g_all(x,:))
-            trainset(x,1)= c;
-        end
-    end
-end
+trainset = test_classifier(Nclass, Ntrain,g_all,true_val);
 
 %tester klassifisereren
 true_val_test = fill_in_truevalues(Nclass,Ntest);
-testset = zeros(Ntest*Nclass,1);
-for x = 1:Nclass*Ntest
-    for c = 1:Nclass
-        if g_all_test(x,c) == max(g_all_test(x,:))
-            testset(x,1)= c;
-        end
-    end
-end
+testset = test_classifier(Nclass, Ntest,g_all_test,true_val_test);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Lage confusion matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,3 +236,29 @@ for i = 1:C
 end
 error_rate = sum_error/(C*N);
 end
+
+%trener klassifisereren, fyller inn resultatene fra discriminant functions
+function testset = test_classifier(C,N,g_all,true_set)
+testset = zeros(N*C,1);
+for x = 1:N*C
+    for c = 1:C
+        if g_all(x,c) == max(g_all(x,:))
+            testset(x,1)= c;
+        end
+    end
+end
+end
+
+%{
+function g_all = make_gvec(C,N,features,means,cov_mats,discriminant2)
+g_all = zeros(N*C,C);
+for i = 1:N*C
+    for c = 1:C
+        x = features(i,:);
+        mu = means(c,:);
+        cov_mat = cov_mats((c-1)*N+1:c*N,:);
+        g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+    end
+end
+end
+%}
