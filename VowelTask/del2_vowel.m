@@ -204,7 +204,8 @@ disp(error_test);
 %         disp(x); 
 %     end
 % end
-gmm=zeros(Nclass, 2); 
+gmm=cell(Nclass, 1); 
+gmm1=zeros(Nclass, 1); 
 for i = 1:Nclass %840
     train_class=zeros(70, 3);
     for c = 1:Ntrain
@@ -217,10 +218,10 @@ for i = 1:Nclass %840
         train_class(c,:)=x; %opretter en matrise hver gang, frøst for klase 1 så 2 osv...
     end
     try
-        gmm(i,2) = fitgmdist(train_class, 2, 'CovarianceType','diagonal','Options',statset('TolFun',1e-8),'RegularizationValue',0.1,'Replicates',5);
+        gmm{i,1} = fitgmdist(train_class, 2, 'CovarianceType','diagonal','CovarianceType','diagonal','Options',statset('TolFun',1e-8), 'RegularizationValue',0.1,'Replicates',5);
     catch exeption
         disp ('Noe er feil') 
-        error=exeption.message;
+        error=exeption.message
     end
     
 end
