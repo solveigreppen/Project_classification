@@ -94,13 +94,14 @@ means_test = [mean_testF1 mean_testF2 mean_testF3];
 
 %lager (12*70)x3 matrise for til trening av klassifisereren
 Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
+test_vals = make_test_matrix(Ftot,N,Ntest,Nclass,Nfeatures);
 
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
 cov_mat_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
-    cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntest);
+    cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(test_vals, i, Ntest);
 end
 cov_mat1 = zeros(36,3);
 for i = 1:12
@@ -114,14 +115,9 @@ function cov_matrix = find_cov(string, class_num, N)
 end
 %}
 
-cov_diags = zeros(Nclass*Nfeatures,Nfeatures);
-cov_diags_test = zeros(Nclass*Nfeatures,Nfeatures);
-for i = 1:Nclass
-    cov_diag = find_cov(Fs, i, Ntrain);
-    cov_diags((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag, Nfeatures, Nfeatures);
-    cov_diag_test = find_cov(Fs, i, Ntest);
-    cov_diags_test((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag_test, Nfeatures, Nfeatures);
-end  
+Ftot = [F1s F2s F3s];
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
@@ -141,7 +137,7 @@ end
 g_all_test = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
-        x = Fs(i,:);
+        x = test_vals(i,:);
         mu = means_test(c,:);
         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
         g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
@@ -184,20 +180,20 @@ disp(error_test);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1c) diagonal covariance matrices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-cov_diag = make_diag_cov(cov_matrices(1:3,:),Nfeatures,Nfeatures);
+
 cov_diags = zeros(Nclass*Nfeatures,Nfeatures);
 cov_diags_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_diag = find_cov(Fs, i, Ntrain);
     cov_diags((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag, Nfeatures, Nfeatures);
-    cov_diag_test = find_cov(Fs, i, Ntest);
+    cov_diag_test = find_cov(test_vals, i, Ntest);
     cov_diags_test((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag_test, Nfeatures, Nfeatures);
 end 
 
 g_all_diag = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
-        x = Fs(i,:);
+        x = test_vals(i,:);
         mu = means_test(c,:);
         cov_mat = cov_diags_test((c-1)*Nfeatures+1:c*Nfeatures,:);
         g_all_diag(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
@@ -257,8 +253,8 @@ end
 function test_inputs = make_test_matrix(inputs,N,Ntest,C,Nfeatures)
     test_inputs = zeros(C*Ntest,Nfeatures);
     for c=1:C
-        x_string = inputs((c-1)*N:c*N,:);
-        test_inputs((c*Ntest-Ntest)+1:c*Ntest,:) = x_string;
+        x_string = inputs((c-1)*N+71:c*N,:);
+        test_inputs((c-1)*Ntest+1:c*Ntest,:) = x_string;
     end
 end
 
