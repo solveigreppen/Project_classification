@@ -233,18 +233,14 @@ end
 % Sånn her kan vi hente ut en matrise fra gmm forresten:
 % weight1 = gmm1.ComponentProportion(1);
 % cov2 = gmm1.Sigma(:,:,2);
+M=2; 
 g_all_train2 = zeros(Ntrain*Nclass, Nclass);
 for i=1:Ntrain*Nclass
     for c=1:Nclass
-        %mu= gmm.mu(:,1); 
-        cov_mat= gmm.Sigma(:,:,1);
-        disp(cov_mat);
-        diag_cov= make_diag_cov(cov_mat,3,3)
-
+        x=Fs(i,:);
+        g_all_train2(i,c) = discriminant3(x,Nfeatures, Prob_w, M,c,gmm); 
     end
 end
-
-
 
 
 
@@ -299,13 +295,27 @@ function cov_matrix = find_cov(string, class_num, N)
     x_string = string((class_num*N-N)+1:class_num*N,:);
     cov_matrix = cov(x_string);
 end
-%Forsøk på 3.5 fra kompendiet. 
-function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M, c_ik) 
+% % %Forsøk på 3.5 fra kompendiet. 
+% % function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M, c_ik) 
+% %     g_i2 = 0; 
+% %     for k=1:M
+% %     g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior)*c_ik;
+% %     end
+% %     
+% % end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%3.5 versjon 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function g_i2 = discriminant3 ( x, Nfeatures, prior, M, class,gmm) 
     g_i2 = 0; 
-    for k=1:M
-    g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior)*c_ik;
+    for m=1:M
+        cov_matrix=gmm{class,1}.Sigma(:,:,m);
+        mu=gmm{class,1}.mu(:,m);
+        w1=gmm{class,1}.ComponentProportion(m);
+        g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior)*w1;
     end
-    
+    disp('g-verdi:')
+    disp(g_i2);
 end
 
 %funksjon 3.4 fra kompendiet
