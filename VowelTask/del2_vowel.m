@@ -205,7 +205,7 @@ disp(error_test);
 %     end
 % end
 gmm=cell(Nclass, 1); 
-gmm1=zeros(Nclass, 1); 
+%gmm1=zeros(Nclass, 1); 
 for i = 1:Nclass %840
     train_class=zeros(70, 3);
     for c = 1:Ntrain
@@ -225,7 +225,28 @@ for i = 1:Nclass %840
     end
     
 end
-disp(gmm); 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Oppgave 2 b
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Sånn her kan vi hente ut en matrise fra gmm forresten:
+% weight1 = gmm1.ComponentProportion(1);
+% cov2 = gmm1.Sigma(:,:,2);
+g_all_train2 = zeros(Ntrain*Nclass, Nclass);
+for i=1:Ntrain*Nclass
+    for c=1:Nclass
+        %mu= gmm.mu(:,1); 
+        cov_mat= gmm.Sigma(:,:,1);
+        disp(cov_mat);
+        diag_cov= make_diag_cov(cov_mat,3,3)
+
+    end
+end
+
+
+
+
 
         %train_class(1,3)= x; 
         
@@ -268,12 +289,6 @@ disp(gmm);
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Oppgave 2b)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Funksjoner
@@ -285,10 +300,10 @@ function cov_matrix = find_cov(string, class_num, N)
     cov_matrix = cov(x_string);
 end
 %Forsøk på 3.5 fra kompendiet. 
-function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M) 
+function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M, c_ik) 
     g_i2 = 0; 
     for k=1:M
-    g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior);
+    g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior)*c_ik;
     end
     
 end
