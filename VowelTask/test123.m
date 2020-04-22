@@ -94,28 +94,17 @@ means_test = [mean_testF1 mean_testF2 mean_testF3];
 
 %lager (12*70)x3 matrise for til trening av klassifisereren
 Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
+Ftot = [F1s F2s F3s];
+% (12*69)x3 matrise som inneholder input vectorene fra F1,F2 og F3 for testing av klassifisereren
+test_vals = make_test_matrix(Ftot,N,Ntest,Nclass,Nfeatures);
 
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
 cov_mat_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
-    cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntest);
+    cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(test_vals, i, Ntest);
 end
-cov_mat1 = zeros(36,3);
-for i = 1:12
-    cov_mat1((i-1)*3+1:(i*3),:) = find_cov(Fs,i,Ntest);
-end
-%lager covariance matrix
-%{
-function cov_matrix = find_cov(string, class_num, N)
-    x_string = string((class_num*N-N)+1:class_num*N,:);
-    cov_matrix = cov(x_string);
-end
-%}
-
-Ftot = [F1s F2s F3s];
-test_vals = make_test_matrix(Ftot,N,Ntest,Nclass,Nfeatures);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -137,7 +126,7 @@ g_all_test = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
         x = test_vals(i,:);
-        mu = means_test(c,:);
+        mu = means_train(c,:);
         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
         g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
     end
