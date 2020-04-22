@@ -17,6 +17,7 @@ Prob_w = 1/Nclass;
 %    er=”heard”, ei=”haid”, ih=”hid”, iy=”heed”, oa=/o/ as in “boat”,  
 %    oo=”hood”, uh=”hud”, uw=”who’d”) 
 
+
 %databehandling
 vowel = str2mat('ae','ah','aw','eh','er','ei','ih','iy','oa','oo','uh','uw'); 
 talker_group = char('m','w','b','g');  
@@ -29,7 +30,7 @@ for i=1:nfiles
     vowel_code(i) = strmatch(files(i,4:5),vowel);  
     talker_group_code(i) = strmatch(files(i,1),talker_group);  
     talker_number(i) = str2num(files(i,2:3)); 
-end; 
+end
 
 %plot histogram
 %{
@@ -97,7 +98,6 @@ means_test = [mean_testF1 mean_testF2 mean_testF3];
 
 %lager (12*70)x3 matrise for til trening av klassifisereren
 Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
-
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
 cov_mat_test = zeros(Nclass*Nfeatures,Nfeatures);
@@ -158,6 +158,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 conf_mat_train = compute_confusion(Nclass,Ntrain, true_val, trainset);
+disp('conf_mat_train')
 %{
 %fill inn confusion matrix: 
 conf_matrix= zeros(Nclass); % trenger en tabell som er 12x12, en med sann klasse, en med plassering. 
@@ -168,7 +169,7 @@ for t=1:Nclass*Ntrain
     conf_matrix(x,y)= conf_matrix(x,y) +1;
 end
 %}
-disp(conf_mat_train);
+
 
 conf_mat_test = compute_confusion(Nclass,Ntest, true_val_test, testset);
 disp(conf_mat_test);
@@ -194,67 +195,81 @@ disp(error_test);
 % Oppgave 2a)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %lage diagonal cov mat 
-
-gmm = zeros(Ntrain*Nclass,Nclass);
-for i = 1:Ntrain*Nclass
-    for c = 1:Nclass
-        x = Fs(i,:);
-        mu = means_train(c,:);
-        cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-        diag_cov = diag(cov_mat);
-        disp(diag_cov);
-        %gmm(i,c)= discriminant3 (diag_cov, mu, x, Nfeatures, Prob_w, 2);
-        %g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w); % denne må vi endre til 3.5
-        
+%trainvec=zeros(12,70
+% mixture=[2,3];
+% gmm = zeros(Nclass,numel(mixture));
+% for i= 1:Ntrain
+%     for k =1:Nfeatures
+%         x = Fs(i, :); 
+%         disp(x); 
+%     end
+% end
+gmm=cell(Nclass, 1); 
+gmm1=zeros(Nclass, 1); 
+for i = 1:Nclass %840
+    train_class=zeros(70, 3);
+    for c = 1:Ntrain
+        x = Fs(c,:);
+        if i> 1
+        d= (Ntrain*(i-1))+(c);
+        %disp(d);
+        x=Fs(d,:);
+        end
+        train_class(c,:)=x; %opretter en matrise hver gang, frøst for klase 1 så 2 osv...
     end
+    try
+        gmm{i,1} = fitgmdist(train_class, 2, 'CovarianceType','diagonal','CovarianceType','diagonal','Options',statset('TolFun',1e-8), 'RegularizationValue',0.1,'Replicates',5);
+    catch exeption
+        disp ('Noe er feil') 
+        error=exeption.message
+    end
+    
 end
+disp(gmm);
+        %train_class(1,3)= x; 
+        
+        %disp(x);
+%         for k = 1:numel(mixture)
+%             m=mixture(k); 
+%             try
+%                 gmm(c, k) = fitgmdist(train_class,m, 'CovarianceType','diagonal','Options',statset('TolFun',1e-8),...
+%             'RegularizationValue',0.1,'Replicates',5);
+%             catch exeption 
+%                 disp('Noe er feil'); 
+%                 error = exeption.message
+%             end
+%         end
+ 
+        
+   
+
+%     cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
+%     diag_cov =  make_diag_cov(cov_mat,3,3); 
+%     for k = 1:numel(mixture)
+%         m=mixture(k); 
+%         x = Fs(i,:);
+%         %cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:); 
+%         try
+%             gmm(c,k) = fitgmdist(Fs(,m);  %skal den ta inn en treningsvektor pr klasse ??
+%         catch  exception 
+%             disp('du har gjort noe feil.'); 
+%             error=exception.message; 
+%         end
+%     end
+% end
+        %The Matlab function GMMi = fitgmdist(trainvi,M); will put M
+        %mixtures into GMMi using the training vectors train vi from class
+        %wi, benytte
+        
+%        gmm(i,c)= discriminant3 (cov_mat, mu, x, Nfeatures, Prob_w, 2);
+        %%brukes når diag_cov har riktig dimensjon.
+        %g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w); % denne må vi endre til 3.5
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Oppgave 2b)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% g_all = zeros(Ntrain*Nclass,Nclass);
-% for i = 1:Ntrain*Nclass
-%     for c = 1:Nclass
-%         x = Fs(i,:);
-%         mu = means_train(c,:);
-%         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-%         g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
-%     end
-% end
-% 
-% g_all_test = zeros(Ntest*Nclass, Nclass);
-% for i = 1:Ntest*Nclass
-%     for c = 1:Nclass
-%         x = Fs(i,:);
-%         mu = means_test(c,:);
-%         cov_mat = cov_matrices((c-1)*Nfeatures+1:c*Nfeatures,:);
-%         g_all_test(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
-%     end
-% end
-% %trener klassifisereren
-% true_val = fill_in_truevalues(Nclass,Ntrain);
-% trainset = zeros(840,1);
-% for x = 1:Nclass*Ntrain
-%     for c = 1:Nclass
-%         if g_all(x,c) == max(g_all(x,:))
-%             trainset(x,1)= c;
-%         end
-%     end
-% end
-% 
-% %tester klassifisereren
-% true_val_test = fill_in_truevalues(Nclass,Ntest);
-% testset = zeros(Ntest*Nclass,1);
-% for x = 1:Nclass*Ntest
-%     for c = 1:Nclass
-%         if g_all_test(x,c) == max(g_all_test(x,:))
-%             testset(x,1)= c;
-%         end
-%     end
-% end
 
 
 
@@ -274,6 +289,7 @@ function g_i2 = discriminant3 (cov_matrix, mu, x, Nfeatures, prior, M)
     for k=1:M
     g_i2= g_i2 + discriminant2(cov_matrix, mu, x, Nfeatures, prior);
     end
+    
 end
 
 %funksjon 3.4 fra kompendiet
@@ -338,4 +354,16 @@ for i = 1:C
     end
 end
 error_rate = sum_error/(C*N);
+end
+%Create diagonal matrix
+
+function cov_diag = make_diag_cov(cov_matrix,width,length)
+    for i = 1:width
+        for j = 1:length
+            if j ~= i
+                cov_matrix(i,j) = 0;
+            end
+        end
+    end
+    cov_diag = cov_matrix;
 end
