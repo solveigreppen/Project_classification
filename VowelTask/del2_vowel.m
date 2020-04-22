@@ -218,14 +218,15 @@ for i = 1:Nclass %840
         train_class(c,:)=x; %opretter en matrise hver gang, frøst for klase 1 så 2 osv...
     end
     try
-        gmm{i,1} = fitgmdist(train_class, 2, 'CovarianceType','diagonal','CovarianceType','diagonal','Options',statset('TolFun',1e-8), 'RegularizationValue',0.1,'Replicates',5);
+        gmm{i,1} = fitgmdist(train_class, 2);
     catch exeption
         disp ('Noe er feil') 
         error=exeption.message
     end
     
 end
-disp(gmm);
+disp(gmm); 
+
         %train_class(1,3)= x; 
         
         %disp(x);
