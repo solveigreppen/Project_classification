@@ -28,10 +28,25 @@ for i=1:nfiles
     talker_number(i) = str2num(files(i,2:3)); 
 end; 
 
-%plot histogram
+%plot histogram for each class
+%{
+for i =1:Nclass
+x1 = F1s(find(vowel_code==i)); 
+%x2 = F2s(find(vowel_code==i));
+%x3 = F3s(find(vowel_code==i));
+%x = [x1 x2 x3];
+figure(1);   
+subplot(4,3,i);   
+hist(x1,20);  % use 20 “bins”   
+set(gca,'XLim',[30 2000]);  % set x-axis limits between 50 & 500 Hz   
+%xlim([50 400]);
+title('class i') %må få til riktig nummerering her
+end
+%}
+
 %{
 %men
-x = F0s(find(talker_group_code==1));   
+x = F0s(find(vowel_code==1));   
 figure(1);   
 subplot(2,2,1);   
 hist(x,20);  % use 20 “bins”   
@@ -65,14 +80,6 @@ hist(x,20);
 set (gca, 'Xlim',[50 500]);
 %xlim([50 500]);
 title('girls');
-%}
-
-%example calculate mean for all males
-%{
-x = F0s(find(talker_group_code==1)); 
-mx = mean(x); 
-disp('Mean F0 for males:') 
-    disp(mx);
 %}
 
 
@@ -199,6 +206,120 @@ disp(conf_mat_diag);
 error_diag = compute_error(Nclass,Ntest,conf_mat_diag);
 disp(error_diag);
 
+%%%%%%%%%%%%%%%%%%%%%
+% Oppgave 2 test
+%%%%%%%%%%%%%%%%%%%%%%
+
+% Oppgave 2a) lager gmm distributions
+%%{
+% trener klassifisereren
+gmms2 = cell(Nclass,1); %lagrer gmm distributions for M=2
+for c = 1:Nclass
+    data = Fs((c-1)*Ntrain+1:c*Ntrain,:);
+    try
+    gmms2{c,1} = fitgmdist(data, 2,'RegularizationValue',0.1,'CovarianceType','diagonal'); %legger til regulariztionvalue for å unngå feilmelding
+    catch exeption
+        disp ('Noe er feil') 
+        error=exeption.message
+    end
+end
+%%}
+
+gmms3 = cell(Nclass,1); %lagrer gmm distributions for M=3
+for c = 1:Nclass
+    data = Fs((c-1)*Ntrain+1:c*Ntrain,:);
+    try
+    gmms3{c,1} = fitgmdist(data, 3,'RegularizationValue',0.1,'CovarianceType','diagonal'); %legger til regulariztionvalue for å unngå feilmelding
+    catch exeption
+        disp ('Noe er feil') 
+        error=exeption.message
+    end
+end
+
+%%% 2b - design gmm classifier
+
+cov_mats2 = zeros(Nclass*Nfeatures,2*Nfeatures);
+cov_mats3 = zeros(Nclass*Nfeatures,3*Nfeatures);
+mus2 = zeros(Nclass,2*Nfeatures);
+mus3 = zeros(Nclass,3*Nfeatures);
+
+%henter ut mu og cov matrix for hver klasse
+for i = 1:2
+    for c=1:Nclass 
+    sigma =gmms2{c,1}.Sigma(:,:,i);
+    sigma = diag(sigma);
+    cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures)= sigma;
+    mus2(c,(i-1)*Nfeatures+1:i*Nfeatures) = gmms2{c,1}.mu(i,:);
+    end
+end
+%%{
+for i = 1:3
+    for c=1:Nclass 
+    sigma =gmms3{c,1}.Sigma(:,:,i);
+    sigma = diag(sigma);
+    cov_mats3((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures)= sigma;
+    mus3(c,(i-1)*Nfeatures+1:i*Nfeatures) = gmms3{c,1}.mu(i,:);
+    end
+end
+%%}
+
+pdf1 = zeros(Ntest*Nclass,Nclass);
+for k = 1:Ntest*Nclass
+    for c = 1:Nclass
+    for i=1:2
+    pdf = 0;
+    cov = cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
+    mu = mus2(c,(i-1)*Nfeatures+1:i*Nfeatures);
+    weight = gmms2{1, 1}.ComponentProportion(1,i);
+    
+    x = test_vals(k,:);
+    frac = (sqrt(2*pi)^(Nfeatures)*det(cov))^(-1);
+    expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
+    pdf = pdf + frac*expo*weight;
+    end
+    pdf1(k,c) = pdf;
+    end
+end
+
+pdf3 = zeros(Ntest*Nclass,Nclass);
+for k = 1:Ntest*Nclass
+    for c = 1:Nclass
+    for i=1:3
+    pdf = 0;
+    cov = cov_mats3((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
+    mu = mus3(c,(i-1)*Nfeatures+1:i*Nfeatures);
+    weight = gmms3{1, 1}.ComponentProportion(1,i);
+    
+    x = test_vals(k,:);
+    frac = (sqrt(2*pi)^(Nfeatures)*det(cov))^(-1);
+    expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
+    pdf = pdf + frac*expo*weight;
+    end
+    pdf3(k,c) = pdf;
+    end
+end
+
+testset_gmm = test_classifier(Nclass, Ntest,pdf1,true_val_diag);
+testset_gmm3 = test_classifier(Nclass, Ntest,pdf3,true_val_diag);
+
+%lager confusion matrix
+conf_mat_gmm = compute_confusion(Nclass,Ntest, true_val_diag, testset_gmm);
+disp('conf mat, 2 mixtures');
+disp(conf_mat_gmm);
+%finner error rate
+error_gmm = compute_error(Nclass,Ntest,conf_mat_gmm);
+disp('error rate, 2 mixtures');
+disp(error_gmm);
+
+%lager confusion matrix
+conf_mat_gmm3 = compute_confusion(Nclass,Ntest, true_val_diag, testset_gmm3);
+disp('conf mat, 3 mixtures');
+disp(conf_mat_gmm3);
+%finner error rate
+error_gmm3 = compute_error(Nclass,Ntest,conf_mat_gmm3);
+disp('error rate, 3 mixtures');
+disp(error_gmm3);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Funksjoner
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -233,7 +354,7 @@ function matrix = make_string(string1,string2,string3,Ntot,Ntrain,Nclass)
     matrix_tot = [string1 string2 string3];
     matrix = zeros(Ntrain*Nclass,3);
     for i = 1:Nclass
-        x_string = matrix_tot((i*Ntot-Ntot)+1:(i-1)*Ntot+Ntrain,:);
+        x_string = matrix_tot((i-1)*Ntot+1:(i-1)*Ntot+Ntrain,:);
         matrix((i*Ntrain-Ntrain)+1:i*Ntrain,:) = x_string;
     end
 end
@@ -279,7 +400,7 @@ end
 error_rate = sum_error/(C*N);
 end
 
-%trener klassifisereren, fyller inn resultatene fra discriminant functions
+%tester klassifisereren, fyller inn resultatene fra discriminant functions
 function testset = test_classifier(C,N,g_all,true_set)
 testset = zeros(N*C,1);
 for x = 1:N*C
