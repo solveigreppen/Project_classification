@@ -106,20 +106,19 @@ Ftot = [F1s F2s F3s];
 test_vals = make_test_matrix(Ftot,N,Ntest,Nclass,Nfeatures);
 
 for i =1:Nclass
-%x1 = F1s(find(vowel_code==i)); 
-%x2 = F2s(find(vowel_code==i));
-%x3 = F3s(find(vowel_code==i));
-%x = [x1 x2 x3];
 x = Ftot((i-1)*N+1:i*N,:);
 xn = i;
 figure(1);   
 subplot(3,4,i);   
-hist(x,20);  % use 20 “bins”   
-set(gca,'XLim',[0 4300]);  % set x-axis limits between 50 & 500 Hz   
-%xlim([50 400]);
-title("Class" + xn); %må få til riktig nummerering her
+hist(x,30);  % use 20 “bins”   
+set(gca,'XLim',[0 4300]);  % set x-axis limits between 50 & 500 Hz  
+set(gca,'YLim',[0,105]);
+
+title("Class " + i); %må få til riktig nummerering her
 end
 %{
+%xlabel('Frequency');
+%ylabel('Quantity');
 figure(1);    
 hist(Ftot(1:70,:),20);  % use 20 “bins”   
 set(gca,'XLim',[0 4000]);  % set x-axis limits between 50 & 500 Hz   
