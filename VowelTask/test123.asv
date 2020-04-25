@@ -105,12 +105,37 @@ Ftot = [F1s F2s F3s];
 % (12*69)x3 matrise som inneholder input vectorene fra F1,F2 og F3 for testing av klassifisereren
 test_vals = make_test_matrix(Ftot,N,Ntest,Nclass,Nfeatures);
 
+%histogram for hver klasse
+%{
+for i =1:Nclass
+x = Ftot((i-1)*N+1:i*N,:);
+xn = i;
+figure(1);   
+subplot(3,4,i);   
+hist(x,30);  % use 20 “bins”   
+set(gca,'XLim',[1400 4700]);  % set x-axis limits between 50 & 500 Hz  
+set(gca,'YLim',[0 25]);
+%sgtitle('Histogram of F1 for each class','t');
+title("Class " + i); %må få til riktig nummerering her
+end
+%}
+
+%{
+%xlabel('Frequency');
+%ylabel('Quantity');
+figure(1);    
+hist(Ftot(1:70,:),20);  % use 20 “bins”   
+set(gca,'XLim',[0 4000]);  % set x-axis limits between 50 & 500 Hz   
+%xlim([50 400]);
+title('class i')
+%}
+
 % (12*3)x3 matrise bestående av de 12 covarians matrisene
 cov_matrices = zeros(Nclass*Nfeatures,Nfeatures);
-cov_mat_test = zeros(Nclass*Nfeatures,Nfeatures);
+%cov_mat_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
-    cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(test_vals, i, Ntest);
+    %cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(test_vals, i, Ntest);
 end
 
 
@@ -119,6 +144,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % (70*12)x12 matrise som inneholder alle discriminant functions
+%{
 g_all = zeros(Ntrain*Nclass,Nclass);
 for i = 1:Ntrain*Nclass
     for c = 1:Nclass
@@ -128,7 +154,7 @@ for i = 1:Ntrain*Nclass
         g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
     end
 end
-
+%}
 g_all_test = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
     for c = 1:Nclass
@@ -139,9 +165,10 @@ for i = 1:Ntest*Nclass
     end
 end
 
-%trener klassifisereren
+%{
 true_val = fill_in_truevalues(Nclass,Ntrain);
 trainset = test_classifier(Nclass, Ntrain,g_all,true_val);
+%}
 
 %tester klassifisereren
 true_val_test = fill_in_truevalues(Nclass,Ntest);
@@ -151,31 +178,22 @@ testset = test_classifier(Nclass, Ntest,g_all_test,true_val_test);
 % Lage confusion matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-conf_mat_train = compute_confusion(Nclass,Ntrain, true_val, trainset);
 %{
-%fill inn confusion matrix: 
-conf_matrix= zeros(Nclass); % trenger en tabell som er 12x12, en med sann klasse, en med plassering. 
-%length_test=length(testset_class); 
-for t=1:Nclass*Ntrain
-    x=true_val(t); 
-    y=trainset(t); 
-    conf_matrix(x,y)= conf_matrix(x,y) +1;
-end
-%}
+conf_mat_train = compute_confusion(Nclass,Ntrain, true_val, trainset);
 disp(conf_mat_train);
-
+%}
 conf_mat_test = compute_confusion(Nclass,Ntest, true_val_test, testset);
+disp('Confusion matrix, full covariance pdfs');
 disp(conf_mat_test);
 %finner error rate
-error = compute_error(Nclass,Ntrain,conf_mat_train);
 error_test = compute_error(Nclass,Ntest,conf_mat_test);
-disp(error);
+disp('error_rate, full covariance p
 disp(error_test);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1c) diagonal covariance matrices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%{
 cov_diags = zeros(Nclass*Nfeatures,Nfeatures);
 cov_diags_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
@@ -308,21 +326,24 @@ disp('conf mat, 2 mixtures');
 disp(conf_mat_gmm);
 %finner error rate
 error_gmm = compute_error(Nclass,Ntest,conf_mat_gmm);
+disp('error rate, 2 mixtures');
 disp(error_gmm);
 
 %lager confusion matrix
 conf_mat_gmm3 = compute_confusion(Nclass,Ntest, true_val_diag, testset_gmm3);
+disp('conf mat, 3 mixtures');
 disp(conf_mat_gmm3);
 %finner error rate
 error_gmm3 = compute_error(Nclass,Ntest,conf_mat_gmm3);
+disp('error rate, 3 mixtures');
 disp(error_gmm3);
-
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Funksjoner
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function cov_matrix = find_cov(string, class_num, N)
-    x_string = string((class_num*N-N)+1:class_num*N,:);
+    x_string = string((class_num-1)*N+1:class_num*N,:);
     cov_matrix = cov(x_string);
 end
 
