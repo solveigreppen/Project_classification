@@ -101,10 +101,11 @@ means_test = [mean_testF1 mean_testF2 mean_testF3];
 
 %lager (12*70)x3 matrise for til trening av klassifisereren
 Fs = make_string(F1s,F2s,F3s,N,Ntrain,Nclass);
+Ft = make_string(F0s,F1s,F2s,N,Ntrain,Nclass);
 Ftot = [F1s F2s F3s];
 % (12*69)x3 matrise som inneholder input vectorene fra F1,F2 og F3 for testing av klassifisereren
 test_vals = make_test_matrix(Ftot,N,Ntest,Nclass,Nfeatures);
-
+test456 = cov(Fs(281:350,:));
 %histogram for hver klasse
 %{
 for i =1:Nclass
@@ -138,7 +139,17 @@ for i = 1:Nclass
     %cov_mat_test((i-1)*3+1:(i*3),:) = find_cov(test_vals, i, Ntest);
 end
 
-
+%lager covariance matrix ut fra ligning (17) i kompendiet
+cov_mat2 = zeros(Nclass*Nfeatures,Nfeatures);
+for c = 1:Nclass
+   sigma2 = 0;
+   for k = 1:Ntrain
+       x = Fs((c-1)*Ntrain+k,:);
+       mu = means_train(c,:);
+       sigma2 = sigma2 + (x-mu)'*(x-mu);
+   end
+   cov_mat2((c-1)*Nfeatures+1:c*Nfeatures,:) = sigma2/Ntrain;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -198,10 +209,12 @@ cov_diags = zeros(Nclass*Nfeatures,Nfeatures);
 %cov_diags_test = zeros(Nclass*Nfeatures,Nfeatures);
 for i = 1:Nclass
     cov_diag = find_cov(Fs, i, Ntrain);
+    %cov_diag = cov_mat2((i-1)*3+1:(i*3),:);
     cov_diags((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag, Nfeatures, Nfeatures);
     %cov_diag_test = find_cov(test_vals, i, Ntest);
     %cov_diags_test((i-1)*3+1:(i*3),:) = make_diag_cov(cov_diag_test, Nfeatures, Nfeatures);
 end 
+
 
 g_all_diag = zeros(Ntest*Nclass, Nclass);
 for i = 1:Ntest*Nclass
@@ -226,101 +239,203 @@ error_diag = compute_error(Nclass,Ntest,conf_mat_diag);
 disp('Error rate, diagonal covariance pdfs');
 disp(error_diag);
 
-%{
+
 %%%%%%%%%%%%%%%%%%%%%
 % Oppgave 2 test
 %%%%%%%%%%%%%%%%%%%%%%
 
 % Oppgave 2a) lager gmm distributions
-%%{
+%data = Ft(281:350,:);
+%gmm = fitgmdist(data,2,'RegularizationValue',0.1);
+%obj = gmdistribution.fit(data,2);
+
 % trener klassifisereren
 gmms2 = cell(Nclass,1); %lagrer gmm distributions for M=2
 for c = 1:Nclass
     data = Fs((c-1)*Ntrain+1:c*Ntrain,:);
+    %gmdistribution.fit(Fs,2);
     try
-    gmms2{c,1} = fitgmdist(data, 2,'RegularizationValue',0.1,'CovarianceType','diagonal'); %legger til regulariztionvalue for å unngå feilmelding
+    gmms2{c,1} = fitgmdist(data, 2,'RegularizationValue',0.9,'CovarianceType','diagonal', 'Replicates',5); %legger til regulariztionvalue for å unngå feilmelding
     catch exeption
         disp ('Noe er feil') 
         error=exeption.message
     end
+    
 end
-%%}
 
-gmms3 = cell(Nclass,1); %lagrer gmm distributions for M=3
+%{
+gmms4 = cell(Nclass,1); %lagrer gmm distributions for M=2
 for c = 1:Nclass
     data = Fs((c-1)*Ntrain+1:c*Ntrain,:);
     try
-    gmms3{c,1} = fitgmdist(data, 3,'RegularizationValue',0.1,'CovarianceType','diagonal'); %legger til regulariztionvalue for å unngå feilmelding
+    gmms4{c,1} = fitgmdist(data, 2,'RegularizationValue',0.1); %legger til regulariztionvalue for å unngå feilmelding
     catch exeption
         disp ('Noe er feil') 
         error=exeption.message
     end
 end
+%}
+
+gmms3 = cell(Nclass,1); %lagrer gmm distributions for M=3   
+for c = 1:Nclass
+    data = Fs((c-1)*Ntrain+1:c*Ntrain,:);
+    try
+    gmms3{c,1} = fitgmdist(data, 3,'RegularizationValue',0.5,'CovarianceType','diagonal'); %legger til regulariztionvalue for å unngå feilmelding
+    catch exeption
+        disp ('Noe er feil') 
+        error=exeption.message
+    end
+end
+
 
 %%% 2b - design gmm classifier
 
 cov_mats2 = zeros(Nclass*Nfeatures,2*Nfeatures);
 cov_mats3 = zeros(Nclass*Nfeatures,3*Nfeatures);
-mus2 = zeros(Nclass,2*Nfeatures);
-mus3 = zeros(Nclass,3*Nfeatures);
+means2 = zeros(Nclass,2*Nfeatures);
+means3 = zeros(Nclass,3*Nfeatures);
+%{
+cov_mats4 = zeros(Nclass*Nfeatures,2*Nfeatures);
+means4 = zeros(Nclass,2*Nfeatures);
+%}
 
 %henter ut mu og cov matrix for hver klasse
 for i = 1:2
     for c=1:Nclass 
     sigma =gmms2{c,1}.Sigma(:,:,i);
-    sigma = diag(sigma);
+    sigma = diag(sigma);   
     cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures)= sigma;
-    mus2(c,(i-1)*Nfeatures+1:i*Nfeatures) = gmms2{c,1}.mu(i,:);
+    means2(c,(i-1)*Nfeatures+1:i*Nfeatures) = gmms2{c,1}.mu(i,:);
+    
+    %{
+    sigma4 =gmms4{c,1}.Sigma(:,:,i);
+    sigma4 = make_diag_cov(sigma4,3,3);
+    cov_mats4((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures)= sigma4;
+    means4(c,(i-1)*Nfeatures+1:i*Nfeatures) = gmms4{c,1}.mu(i,:);
+    %}
     end
 end
-%%{
+
+
 for i = 1:3
     for c=1:Nclass 
     sigma =gmms3{c,1}.Sigma(:,:,i);
     sigma = diag(sigma);
     cov_mats3((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures)= sigma;
-    mus3(c,(i-1)*Nfeatures+1:i*Nfeatures) = gmms3{c,1}.mu(i,:);
+    means3(c,(i-1)*Nfeatures+1:i*Nfeatures) = gmms3{c,1}.mu(i,:);
     end
 end
-%%}
+
 
 pdf1 = zeros(Ntest*Nclass,Nclass);
-for k = 1:Ntest*Nclass
-    for c = 1:Nclass
-    for i=1:2
+%pdfs4 = zeros(Ntest*Nclass,Nclass);
+format shortg;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Testing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
+cov6 = cov_mats2(16:18,4:6)
+cov8 = cov_mats2(13:15,4:6)
+cov7 = cov_mats2(13:15,1:3)
+data3 = test_vals(290,:);
+    cov9 = cov_mats2(13:15,4:6)
+    mu9 = means2(5,4:6)
+    weight = gmms2{5, 1}.ComponentProportion(1,2)
+    %frac = (sqrt((2*pi)^(Nfeatures)*det(cov9)))^(-1)
+    %expo = exp(-0.5*(data3-mu9)*cov9^(-1)*(data3-mu9)')
+    pdf = (sqrt((2*pi)^(Nfeatures)*det(cov9)))^(-1)*exp(-0.5*(data3-mu9)*cov9^(-1)*(data3-mu9)')*weight
+%}
+%{
+for n =281:282   
     pdf = 0;
-    cov = cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
-    mu = mus2(c,(i-1)*Nfeatures+1:i*Nfeatures);
-    weight = gmms2{1, 1}.ComponentProportion(1,i);
-    
-    x = test_vals(k,:);
-    frac = (sqrt(2*pi)^(Nfeatures)*det(cov))^(-1);
-    expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
-    pdf = pdf + frac*expo*weight;
+    data3 = test_vals(n,:)
+    for i = 1:2
+    pdf
+    cov9 = cov_mats2(13:15,(i-1)*Nfeatures+1:i*Nfeatures)
+    mu9 = means2(5,(i-1)*Nfeatures+1:i*Nfeatures)
+    weight = gmms2{5,1}.ComponentProportion(1,i)
+    frac = (sqrt((2*pi)^(Nfeatures)*det(cov9)))^(-1)
+    expo = exp(-0.5*(data3-mu9)*cov9^(-1)*(data3-mu9)')
+    pdf = pdf + frac*expo*weight
     end
+end
+%}
+%{
+for k = 1:Nclass*Ntest
+    x = test_vals(k,:);
+    for c = 1:Nclass  
+        pdf = 0;
+        for i=1:2             
+            cov = cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
+            mu = means2(c,(i-1)*Nfeatures+1:i*Nfeatures);
+            weight = gmms2{c, 1}.ComponentProportion(1,i)   
+            frac = (sqrt((2*pi)^(Nfeatures)*det(cov)))^(-1);
+            expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
+            pdf = pdf + frac*expo*weight;
+        end
     pdf1(k,c) = pdf;
     end
 end
-
+%}
+%%{
+for k = 1:Ntest*Nclass
+    x = test_vals(k,:);
+    for c = 1:Nclass  
+        pdf = 0;
+        for i=1:2             
+        cov = cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
+        mu = means2(c,(i-1)*Nfeatures+1:i*Nfeatures);
+        weight = gmms2{c, 1}.ComponentProportion(1,i);
+    %{
+    pdf4 = 0;
+    cov4 = cov_mats4((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
+    mu4 = means4(c,(i-1)*Nfeatures+1:i*Nfeatures);
+    weight4 = gmms4{1, 1}.ComponentProportion(1,i);
+    %}
+    
+        frac = (sqrt((2*pi)^(Nfeatures)*det(cov)))^(-1);
+        expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
+        pdf = pdf + frac*expo*weight;
+        end
+    pdf1(k,c) = pdf;
+    %pdfs4(k,c) = pdf4;
+    end
+end
+%%{
 pdf3 = zeros(Ntest*Nclass,Nclass);
 for k = 1:Ntest*Nclass
-    for c = 1:Nclass
-    for i=1:3
-    pdf = 0;
-    cov = cov_mats3((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
-    mu = mus3(c,(i-1)*Nfeatures+1:i*Nfeatures);
-    weight = gmms3{1, 1}.ComponentProportion(1,i);
-    
     x = test_vals(k,:);
-    frac = (sqrt(2*pi)^(Nfeatures)*det(cov))^(-1);
+    for c = 1:Nclass
+         pdf = 0;
+    for i=1:3
+   
+    cov = cov_mats3((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
+    mu = means3(c,(i-1)*Nfeatures+1:i*Nfeatures);
+    weight = gmms3{c, 1}.ComponentProportion(1,i);   
+    frac = (sqrt((2*pi)^(Nfeatures)*det(cov)))^(-1);
     expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
     pdf = pdf + frac*expo*weight;
+    %pdf = pdf + mvnpdf(x,mu,cov);
     end
     pdf3(k,c) = pdf;
     end
 end
+%%}
+%{
+pdfs_t = zeros(Ntest*Nclass,Nclass);
+for i = 1:Nclass
+    
+    for k = 1:Ntest*Nclass
+        x = test_vals(k,:);
 
+    end
+
+end
+%}
 testset_gmm = test_classifier(Nclass, Ntest,pdf1,true_val_diag);
+%testset_gmm4 = test_classifier(Nclass, Ntest,pdfs4,true_val_diag);
+
 testset_gmm3 = test_classifier(Nclass, Ntest,pdf3,true_val_diag);
 
 %lager confusion matrix
@@ -331,6 +446,18 @@ disp(conf_mat_gmm);
 error_gmm = compute_error(Nclass,Ntest,conf_mat_gmm);
 disp('error rate, 2 mixtures');
 disp(error_gmm);
+
+%lager confusion matrix
+%{
+conf_mat_gmm4 = compute_confusion(Nclass,Ntest, true_val_diag, testset_gmm4);
+disp('conf mat, 2 mixtures');
+disp(conf_mat_gmm4);
+%finner error rate
+error_gmm4 = compute_error(Nclass,Ntest,conf_mat_gmm4);
+disp('error rate, 2 mixtures');
+disp(error_gmm4);
+%}
+
 
 %lager confusion matrix
 conf_mat_gmm3 = compute_confusion(Nclass,Ntest, true_val_diag, testset_gmm3);
@@ -352,7 +479,7 @@ end
 
 %funksjon 3.4 fra kompendiet
 function g_i = discriminant2(cov_matrix, mu, x,Nfeatures, prior)
-    frac = (sqrt(2*pi)^(Nfeatures)*det(cov_matrix))^(-1);
+    frac = (sqrt((2*pi)^(Nfeatures)*det(cov_matrix)))^(-1);
     expo = exp(-0.5*(x-mu)*cov_matrix^(-1)*(x-mu)');
     g_i = frac*expo*prior;
 end
