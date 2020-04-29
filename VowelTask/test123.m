@@ -379,6 +379,7 @@ for k = 1:Nclass*Ntest
 end
 %}
 %%{
+% HER TROR JEG DET SKJER NOE RART
 for k = 1:Ntest*Nclass
     x = test_vals(k,:);
     for c = 1:Nclass  
@@ -403,6 +404,7 @@ for k = 1:Ntest*Nclass
     end
 end
 %%{
+% HER TROR JEG DET SKJER NOE RART
 pdf3 = zeros(Ntest*Nclass,Nclass);
 for k = 1:Ntest*Nclass
     x = test_vals(k,:);
