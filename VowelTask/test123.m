@@ -404,7 +404,7 @@ for k = 1:Ntest*Nclass
     end
 end
 %%{
-% HER TROR JEG DET SKJER NOE RART
+% HER TROR JEG DET SKJER NOE RART:
 pdf3 = zeros(Ntest*Nclass,Nclass);
 for k = 1:Ntest*Nclass
     x = test_vals(k,:);
