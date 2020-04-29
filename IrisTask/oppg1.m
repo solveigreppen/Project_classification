@@ -35,7 +35,6 @@ x3_test = x3all(Ntrain+1:end,:);
 x_test = [x1_test; x2_test; x3_test]; %60x4
 
 
-
 %training the classifier
 % %function [W, MSEs, nablaW_MSEs] = train_classifier(M, N, C, x_vec, Weight)
 [W,MSEs, g_all]=train_classifier(M, Ntrain, C, x_train, W, alpha);  
@@ -192,7 +191,7 @@ set(gca,'XLim',[50 500]);  % set x-axis limits between 50 & 500 Hz
 title('adult males')
 %}
 
-%{
+%%{
 xh = x1_train(:,1);
 figure(1);
 subplot(3,4,1);
@@ -276,7 +275,7 @@ subplot(3,4,12);
 hist(xh12,20)
 set(gca,'XLim',[0 3]);  % set x-axis limits between 0-10  
 title('Class 3, petal width');
-%}
+%%}
 
 %the sepal width-feature has the biggest overlap between the classes - we
 %remove this one
