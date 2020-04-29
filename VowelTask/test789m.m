@@ -330,6 +330,10 @@ end
 pdf1 = zeros(Ntest*Nclass,Nclass);
 %pdfs4 = zeros(Ntest*Nclass,Nclass);
 format shortg;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Testing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 cov6 = cov_mats2(16:18,4:6)
 cov8 = cov_mats2(13:15,4:6)
@@ -357,6 +361,7 @@ for n =281:282
     end
 end
 %}
+%{
 for k = 1:Nclass*Ntest
     x = test_vals(k,:);
     for c = 1:Nclass  
@@ -364,7 +369,7 @@ for k = 1:Nclass*Ntest
         for i=1:2             
             cov = cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
             mu = means2(c,(i-1)*Nfeatures+1:i*Nfeatures);
-            weight = gmms2{c, 1}.ComponentProportion(1,i)   
+            weight = gmms2{c, 1}.ComponentProportion(1,i); 
             frac = (sqrt((2*pi)^(Nfeatures)*det(cov)))^(-1);
             expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
             pdf = pdf + frac*expo*weight;
@@ -372,7 +377,9 @@ for k = 1:Nclass*Ntest
     pdf1(k,c) = pdf;
     end
 end
-%{
+%}
+%%{
+% HER TROR JEG DET SKJER NOE RART
 for k = 1:Ntest*Nclass
     x = test_vals(k,:);
     for c = 1:Nclass  
@@ -391,27 +398,13 @@ for k = 1:Ntest*Nclass
         frac = (sqrt((2*pi)^(Nfeatures)*det(cov)))^(-1);
         expo = exp(-0.5*(x-mu)*cov^(-1)*(x-mu)');
         pdf = pdf + frac*expo*weight;
-        %{
-        x = test_vals(k,:);
-        cov = cov_mats2((c-1)*Nfeatures+1:c*Nfeatures,(i-1)*Nfeatures+1:i*Nfeatures);
-        mu = means2(c,(i-1)*Nfeatures+1:i*Nfeatures);
-        weight = gmms2{1, 1}.ComponentProportion(1,i);
-        %}
-        %obj = discriminant2(cov, mu, x,Nfeatures, Prob_w);
-        %pdf = pdf + obj*weight/Prob_w;
-        
-        pdf = pdf + mvnpdf(x,mu,cov);
-    %{
-    frac4 = (sqrt(2*pi)^(Nfeatures)*det(cov4))^(-1);
-    expo4 = exp(-0.5*(x-mu4)*cov4^(-1)*(x-mu4)');
-    pdf4 = pdf4 + frac4*expo4*weight4;
-    %}
         end
     pdf1(k,c) = pdf;
     %pdfs4(k,c) = pdf4;
     end
 end
 %%{
+% HER TROR JEG DET SKJER NOE RART:
 pdf3 = zeros(Ntest*Nclass,Nclass);
 for k = 1:Ntest*Nclass
     x = test_vals(k,:);
