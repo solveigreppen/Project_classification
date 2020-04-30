@@ -116,7 +116,17 @@ for i = 1:Nclass
     cov_matrices((i-1)*3+1:(i*3),:) = find_cov(Fs, i, Ntrain);
 end
 
-
+%make covariance matrix from eq. (17) in the compendium
+cov_mat2 = zeros(Nclass*Nfeatures,Nfeatures);
+for c = 1:Nclass
+   sigma2 = 0;
+   for k = 1:Ntrain
+       x = Fs((c-1)*Ntrain+k,:);
+       mu = means_train(c,:);
+       sigma2 = sigma2 + (x-mu)'*(x-mu);
+   end
+   cov_mat2((c-1)*Nfeatures+1:c*Nfeatures,:) = sigma2/Ntrain;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1b: designe gaussian classifier
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -333,25 +343,28 @@ error_gmm3 = compute_error(Nclass,Ntest,conf_mat_gmm3);
 disp('error rate, 3 mixtures');
 disp(error_gmm3);
 
+%lager confusion matrix
 
+%finner error rate
+
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Functions
+% Funksjoner
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%make covariance matrix from data set
 function cov_matrix = find_cov(string, class_num, N)
     x_string = string((class_num-1)*N+1:class_num*N,:);
     cov_matrix = cov(x_string);
 end
 
-%function 3.4 from compendium
+%funksjon 3.4 fra kompendiet
 function g_i = discriminant2(cov_matrix, mu, x,Nfeatures, prior)
     frac = (sqrt((2*pi)^(Nfeatures)*det(cov_matrix)))^(-1);
     expo = exp(-0.5*(x-mu)*cov_matrix^(-1)*(x-mu)');
     g_i = frac*expo*prior;
 end
 
-%Nclassx1 matrix consisting of the mean of one feature for each klasse
+%Nclassx1 matrise bestående av middelverdien til en feature for hver klasse
 function [mean_train, mean_test] = find_mean(string,Nclass,Ntot,Ntrain)
     mean_train = zeros(Nclass,1);
     mean_test = zeros(Nclass,1);
@@ -374,7 +387,6 @@ function matrix = make_string(string1,string2,string3,Ntot,Ntrain,Nclass)
     end
 end
 
-%make matrix for test set
 function test_inputs = make_test_matrix(inputs,N,Ntest,C,Nfeatures)
     test_inputs = zeros(C*Ntest,Nfeatures);
     for c=1:C
@@ -428,6 +440,19 @@ for x = 1:N*C
 end
 end
 
+%{
+function g_all = make_gvec(C,N,features,means,cov_mats,discriminant2)
+g_all = zeros(N*C,C);
+for i = 1:N*C
+    for c = 1:C
+        x = features(i,:);
+        mu = means(c,:);
+        cov_mat = cov_mats((c-1)*N+1:c*N,:);
+        g_all(i,c) = discriminant2(cov_mat, mu, x, Nfeatures, Prob_w);
+    end
+end
+end
+%}
 function cov_diag = make_diag_cov(cov_matrix,width,length)
     for i = 1:width
         for j = 1:length
